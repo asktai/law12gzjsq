@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>月平均工资计算器专业增强版_胡皓 V1.0.0</title>
+    <title>月平均工资计算器专业增强版_胡皓 V1.1.0</title>
     <meta name="author" content="胡皓">
-    <meta name="description" content="基于司法实践的专业HR工资计算器，支持剔除非正常月、经济补偿金N/2N/N+1计算、个税估算">
-    <meta name="keywords" content="12个月平均工资,经济补偿金计算器,2N计算,劳动争议,工资核算">
+    <meta name="description" content="基于司法实践的专业HR工资计算器，支持剔除非正常月、经济补偿金N/2N/N+1计算、工伤赔偿金、劳动争议赔偿金、个税估算">
+    <meta name="keywords" content="12个月平均工资,经济补偿金计算器,2N计算,劳动争议,工资核算,工伤赔偿,赔偿金计算">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧮</text></svg>">
     <style>
         :root {
@@ -15,6 +15,8 @@
             --danger: #F53F3F;
             --warning: #FF7D00;
             --success: #00B42A;
+            --purple: #722ED1;
+            --cyan: #14C9C9;
             --text-primary: #1D2129;
             --text-secondary: #4E5969;
             --border: #E5E6EB;
@@ -96,7 +98,7 @@
         /* Layout */
         .main-grid {
             display: grid;
-            grid-template-columns: 1fr 380px;
+            grid-template-columns: 1fr 420px;
             gap: 24px;
             margin-bottom: 30px;
         }
@@ -207,7 +209,7 @@
             font-weight: 500;
         }
         
-        .input-group input {
+        .input-group input, .input-group select {
             width: 100%;
             padding: 8px 12px;
             border: 1px solid var(--border);
@@ -217,7 +219,7 @@
             font-family: 'Courier New', monospace;
         }
         
-        .input-group input:focus {
+        .input-group input:focus, .input-group select:focus {
             outline: none;
             border-color: var(--primary);
             box-shadow: 0 0 0 3px rgba(22, 93, 255, 0.1);
@@ -386,7 +388,7 @@
         }
         
         .comp-result-value {
-            font-size: 24px;
+            font-size: 20px;
             font-weight: 700;
             color: var(--text-primary);
             font-family: 'Courier New', monospace;
@@ -395,6 +397,97 @@
         .comp-result-value.n { color: var(--primary); }
         .comp-result-value.n1 { color: var(--warning); }
         .comp-result-value.n2 { color: var(--danger); }
+        
+        /* Special Calculators */
+        .special-calc {
+            background: linear-gradient(135deg, #F5F0FF 0%, #EFEBFF 100%);
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            border: 1px solid #D4C4F7;
+        }
+        
+        .special-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--purple);
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .calc-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+        
+        .calc-tab {
+            padding: 8px 16px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            background: var(--white);
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        
+        .calc-tab.active {
+            background: var(--purple);
+            color: var(--white);
+            border-color: var(--purple);
+        }
+        
+        .calc-tab:hover:not(.active) {
+            border-color: var(--purple);
+            color: var(--purple);
+        }
+        
+        .calc-content {
+            display: none;
+        }
+        
+        .calc-content.active {
+            display: block;
+        }
+        
+        .calc-input-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+        
+        @media (max-width: 600px) {
+            .calc-input-row {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .calc-result-highlight {
+            background: var(--white);
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 16px;
+            text-align: center;
+            border: 2px solid var(--purple);
+        }
+        
+        .calc-result-highlight .label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+        
+        .calc-result-highlight .value {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--purple);
+            font-family: 'Courier New', monospace;
+        }
         
         /* Buttons */
         .btn-group {
@@ -453,6 +546,15 @@
             color: var(--white);
         }
         
+        .btn-purple {
+            background: var(--purple);
+            color: var(--white);
+        }
+        
+        .btn-purple:hover {
+            background: #5B21B6;
+        }
+        
         /* Legal Reference */
         .legal-box {
             background: #F0FDF4;
@@ -486,6 +588,7 @@
         .tag-red { background: #FFE4E4; color: var(--danger); }
         .tag-green { background: #DCFCE7; color: var(--success); }
         .tag-orange { background: #FFEDD5; color: var(--warning); }
+        .tag-purple { background: #F3E8FF; color: var(--purple); }
         
         /* Tax Section */
         .tax-section {
@@ -539,7 +642,7 @@
         .modal-content {
             background: var(--white);
             border-radius: 12px;
-            max-width: 600px;
+            max-width: 700px;
             width: 90%;
             max-height: 80vh;
             overflow-y: auto;
@@ -620,7 +723,7 @@
                 font-size: 24px;
             }
             
-            .comp-grid {
+            .comp-grid, .calc-input-row {
                 grid-template-columns: 1fr;
             }
         }
@@ -666,6 +769,7 @@
         .stat-icon.blue { background: var(--primary-light); }
         .stat-icon.red { background: #FFE4E4; }
         .stat-icon.green { background: #DCFCE7; }
+        .stat-icon.purple { background: #F3E8FF; }
         
         .stat-info {
             display: flex;
@@ -682,16 +786,59 @@
             font-size: 12px;
             color: var(--text-secondary);
         }
+        
+        /* Formula Box */
+        .formula-box {
+            background: #F8FAFC;
+            border: 1px dashed #CBD5E1;
+            border-radius: 8px;
+            padding: 12px;
+            margin: 12px 0;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+        
+        .formula-box code {
+            background: #E2E8F0;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+        
+        /* Table Styles */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            margin-top: 12px;
+        }
+        
+        .data-table th, .data-table td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .data-table th {
+            background: var(--bg);
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+        
+        .data-table tr:hover {
+            background: var(--bg);
+        }
     </style>
 </head>
 <body>
     <div class="header">
         <h1>🧮 月平均工资计算器专业增强版</h1>
-        <p class="subtitle">基于司法实践 · 智能剔除非正常月 · 经济补偿金N/2N/N+1计算</p>
+        <p class="subtitle">基于司法实践 · 智能剔除非正常月 · 经济补偿金N/2N/N+1 · 工伤赔偿 · 劳动争议</p>
         <p class="meta">
-            作者：胡皓 | 版本：V1.0.0 | 
-            <a href="https://github.com/asktai/AiLTK" target="_blank">GitHub</a> | 
-            <a href="https://asktai.github.io/AiLTK/" target="_blank">在线版</a>
+            作者：胡皓 | 版本：V1.1.0 | 
+            <a href="https://github.com/asktai/law12gzjsq" target="_blank">GitHub</a> | 
+            <a href="https://asktai.github.io/law12gzjsq/" target="_blank">在线版</a> | 
+            <a href="https://asktai.github.io/AiLTK/" target="_blank">其它工具</a>
         </p>
     </div>
 
@@ -719,6 +866,13 @@
                     <span class="stat-label">有效月份</span>
                 </div>
             </div>
+            <div class="stat-item">
+                <div class="stat-icon purple">💰</div>
+                <div class="stat-info">
+                    <span class="stat-value" id="statBase">0</span>
+                    <span class="stat-label">计算基数</span>
+                </div>
+            </div>
         </div>
 
         <div class="main-grid">
@@ -738,6 +892,8 @@
                                     <option value="shanghai">上海（2025年：约18,135元/月）</option>
                                     <option value="guangzhou">广州（2025年：约13,476元/月）</option>
                                     <option value="shenzhen">深圳（2025年：约14,530元/月）</option>
+                                    <option value="hangzhou">杭州（2025年：约12,500元/月）</option>
+                                    <option value="chengdu">成都（2025年：约10,500元/月）</option>
                                     <option value="other" selected>其他城市</option>
                                 </select>
                             </div>
@@ -762,6 +918,7 @@
                             <span class="info-tag tag-red">⚠️ 含加班费地区：北京/深圳/杭州/江苏</span>
                             <span class="info-tag tag-green">✓ 不含加班费：四川/上海</span>
                             <span class="info-tag tag-orange">📌 年终奖按12个月分摊</span>
+                            <span class="info-tag tag-purple">🏥 工伤赔偿按本人工资计算</span>
                         </div>
                         
                         <div class="btn-group no-print">
@@ -891,6 +1048,160 @@
                             </div>
                         </div>
 
+                        <!-- Special Calculators: Work Injury & Labor Dispute -->
+                        <div class="special-calc">
+                            <div class="special-title">🏥 专项赔偿金计算器 V1.1.0 新增</div>
+                            
+                            <div class="calc-tabs">
+                                <div class="calc-tab active" onclick="switchTab('injury')">工伤赔偿</div>
+                                <div class="calc-tab" onclick="switchTab('dispute')">劳动争议</div>
+                                <div class="calc-tab" onclick="switchTab('other')">其他赔偿</div>
+                            </div>
+                            
+                            <!-- Work Injury Calculator -->
+                            <div class="calc-content active" id="injuryCalc">
+                                <div class="calc-input-row">
+                                    <div class="input-group">
+                                        <label>工伤伤残等级（1-10级）</label>
+                                        <select id="injuryLevel" onchange="calculateInjury()">
+                                            <option value="">请选择等级</option>
+                                            <option value="1">一级伤残（最重）</option>
+                                            <option value="2">二级伤残</option>
+                                            <option value="3">三级伤残</option>
+                                            <option value="4">四级伤残</option>
+                                            <option value="5">五级伤残</option>
+                                            <option value="6">六级伤残</option>
+                                            <option value="7">七级伤残</option>
+                                            <option value="8">八级伤残</option>
+                                            <option value="9">九级伤残</option>
+                                            <option value="10">十级伤残（最轻）</option>
+                                        </select>
+                                    </div>
+                                    <div class="input-group">
+                                        <label>本人月工资（元）</label>
+                                        <input type="number" id="injuryWage" placeholder="自动带入计算基数" readonly>
+                                    </div>
+                                </div>
+                                <div class="calc-input-row">
+                                    <div class="input-group">
+                                        <label>当地社平工资（元/月）</label>
+                                        <input type="number" id="injurySocialAvg" placeholder="自动根据地区计算">
+                                    </div>
+                                    <div class="input-group">
+                                        <label>是否解除劳动关系</label>
+                                        <select id="injuryTerminate" onchange="calculateInjury()">
+                                            <option value="no">保留劳动关系</option>
+                                            <option value="yes">解除/终止劳动关系</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <div class="formula-box">
+                                    <strong>计算公式：</strong><br>
+                                    一次性伤残补助金 = 本人工资 × 法定月数（7-27个月）<br>
+                                    一次性工伤医疗补助金 = 社平工资 × 法定月数（仅解除劳动关系时）<br>
+                                    一次性伤残就业补助金 = 社平工资 × 法定月数（仅解除劳动关系时，5-10级）
+                                </div>
+                                
+                                <div class="calc-result-highlight">
+                                    <div class="label">工伤赔偿合计预估</div>
+                                    <div class="value" id="injuryTotal">¥ 0.00</div>
+                                </div>
+                                
+                                <table class="data-table" id="injuryDetailTable" style="display: none;">
+                                    <thead>
+                                        <tr>
+                                            <th>赔偿项目</th>
+                                            <th>计算标准</th>
+                                            <th>金额</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="injuryDetailBody">
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <!-- Labor Dispute Calculator -->
+                            <div class="calc-content" id="disputeCalc">
+                                <div class="calc-input-row">
+                                    <div class="input-group">
+                                        <label>争议类型</label>
+                                        <select id="disputeType" onchange="calculateDispute()">
+                                            <option value="">请选择争议类型</option>
+                                            <option value="unpaid_wage">拖欠工资</option>
+                                            <option value="overtime">加班费争议</option>
+                                            <option value="annual_leave">未休年假工资</option>
+                                            <option value="double_wage">未签劳动合同二倍工资</option>
+                                            <option value="illegal_dismissal">违法解除赔偿金</option>
+                                            <option value="social_insurance">未缴社保赔偿</option>
+                                        </select>
+                                    </div>
+                                    <div class="input-group">
+                                        <label>主张金额/计算基数（元）</label>
+                                        <input type="number" id="disputeBase" placeholder="自动带入计算基数">
+                                    </div>
+                                </div>
+                                <div class="calc-input-row">
+                                    <div class="input-group">
+                                        <label>争议期间（月）</label>
+                                        <input type="number" id="disputeMonths" placeholder="例如：6" onchange="calculateDispute()">
+                                    </div>
+                                    <div class="input-group">
+                                        <label>额外主张金额（元）</label>
+                                        <input type="number" id="disputeExtra" placeholder="0" value="0" onchange="calculateDispute()">
+                                    </div>
+                                </div>
+                                
+                                <div class="formula-box" id="disputeFormula">
+                                    <strong>计算说明：</strong><br>
+                                    请选择争议类型查看具体计算公式...
+                                </div>
+                                
+                                <div class="calc-result-highlight">
+                                    <div class="label">劳动争议赔偿金预估</div>
+                                    <div class="value" id="disputeTotal">¥ 0.00</div>
+                                </div>
+                                
+                                <div style="margin-top: 16px; padding: 12px; background: #FEF3C7; border-radius: 6px; font-size: 12px; color: var(--warning);">
+                                    <strong>⚠️ 提示：</strong>劳动争议赔偿金计算涉及多种因素，包括证据充分性、地方司法口径、仲裁时效等，建议咨询专业劳动法律师获取准确评估。
+                                </div>
+                            </div>
+                            
+                            <!-- Other Compensation -->
+                            <div class="calc-content" id="otherCalc">
+                                <div class="calc-input-row">
+                                    <div class="input-group">
+                                        <label>赔偿类型</label>
+                                        <select id="otherType" onchange="calculateOther()">
+                                            <option value="">请选择类型</option>
+                                            <option value="medical_period">医疗期补助金</option>
+                                            <option value="employment_assistance">就业补助金</option>
+                                            <option value="severance_special">特殊离职补偿</option>
+                                        </select>
+                                    </div>
+                                    <div class="input-group">
+                                        <label>计算基数（元）</label>
+                                        <input type="number" id="otherBase" placeholder="自动带入计算基数">
+                                    </div>
+                                </div>
+                                <div class="calc-input-row">
+                                    <div class="input-group">
+                                        <label>计算系数/月数</label>
+                                        <input type="number" id="otherFactor" placeholder="例如：6" step="0.5" onchange="calculateOther()">
+                                    </div>
+                                    <div class="input-group">
+                                        <label>额外金额（元）</label>
+                                        <input type="number" id="otherExtra" placeholder="0" value="0" onchange="calculateOther()">
+                                    </div>
+                                </div>
+                                
+                                <div class="calc-result-highlight">
+                                    <div class="label">其他赔偿金预估</div>
+                                    <div class="value" id="otherTotal">¥ 0.00</div>
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- Tax Estimation -->
                         <div class="tax-section">
                             <div class="tax-title">📝 个税估算（经济补偿金）</div>
@@ -918,7 +1229,7 @@
                         <div class="btn-group no-print" style="margin-top: 20px;">
                             <button class="btn btn-success" onclick="exportData()">💾 导出核算记录</button>
                             <button class="btn btn-secondary" onclick="printCalc()">🖨️ 打印报告</button>
-                            <button class="btn btn-primary" onclick="showLegalRef()">📚 法律依据</button>
+                            <button class="btn btn-purple" onclick="showLegalRef()">📚 法律依据</button>
                         </div>
                     </div>
                 </div>
@@ -929,7 +1240,7 @@
         <div class="modal" id="legalModal">
             <div class="modal-content">
                 <div class="modal-header">
-                    <div class="modal-title">📚 法律依据与实务指南</div>
+                    <div class="modal-title">📚 法律依据与实务指南 V1.1.0</div>
                     <span class="modal-close" onclick="closeModal()">&times;</span>
                 </div>
                 <div style="font-size: 14px; line-height: 1.8; color: var(--text-secondary);">
@@ -945,7 +1256,24 @@
                         劳动者在劳动合同解除或者终止前12个月的平均工资低于当地最低工资标准的，按照当地最低工资标准计算。劳动者工作不满12个月的，按照实际工作的月数计算平均工资。
                     </p>
                     
-                    <h3 style="color: var(--primary); margin-bottom: 12px;">三、剔除非正常月的司法实践</h3>
+                    <h3 style="color: var(--purple); margin-bottom: 12px;">三、工伤赔偿法律依据（V1.1.0新增）</h3>
+                    <p style="margin-bottom: 16px;">
+                        <strong>《工伤保险条例》第三十五条至三十七条：</strong><br>
+                        • 一级伤残：27个月本人工资；二级：25个月；三级：23个月；四级：21个月<br>
+                        • 五级伤残：18个月本人工资；六级：16个月<br>
+                        • 七级伤残：13个月本人工资；八级：11个月；九级：9个月；十级：7个月<br><br>
+                        <strong>一次性工伤医疗补助金和伤残就业补助金：</strong>具体标准由省、自治区、直辖市人民政府规定，通常以当地社平工资为基数计算。
+                    </p>
+                    
+                    <h3 style="color: var(--purple); margin-bottom: 12px;">四、劳动争议赔偿金（V1.1.0新增）</h3>
+                    <p style="margin-bottom: 16px;">
+                        <strong>拖欠工资：</strong>用人单位拖欠劳动报酬的，劳动者可以主张100%赔偿金（《劳动合同法》第85条）<br>
+                        <strong>加班费：</strong>工作日加班1.5倍、休息日2倍、法定节假日3倍（《劳动法》第44条）<br>
+                        <strong>未休年假：</strong>按日工资收入的300%支付（《职工带薪年休假条例》第5条）<br>
+                        <strong>未签合同：</strong>自用工之日起超过一个月不满一年未订立书面劳动合同的，应当向劳动者每月支付二倍的工资（《劳动合同法》第82条）
+                    </p>
+                    
+                    <h3 style="color: var(--primary); margin-bottom: 12px;">五、剔除非正常月的司法实践</h3>
                     <p style="margin-bottom: 16px;">
                         <strong>最高人民法院(2023)最高法民申2918号裁定：</strong>认为劳动者关于"十二个月的平均工资"应为劳动合同解除或者终止前劳动者正常工作状态下十二个月的平均工资，不包括公司放假、医疗期等非正常工作期间的工资，<strong>缺乏法律依据</strong>。<br><br>
                         <strong>地区差异：</strong><br>
@@ -954,7 +1282,7 @@
                         • 其他地区：建议结合当地裁审口径综合判断
                     </p>
                     
-                    <h3 style="color: var(--primary); margin-bottom: 12px;">四、个税政策</h3>
+                    <h3 style="color: var(--primary); margin-bottom: 12px;">六、个税政策</h3>
                     <p>
                         <strong>财税〔2018〕164号：</strong>个人与用人单位解除劳动关系取得一次性补偿收入（包括经济补偿金、生活补助费和其他补助费），在当地上年职工平均工资3倍数额以内的部分，免征个人所得税；超过3倍数额的部分，不并入当年综合所得，单独适用综合所得税率表，计算纳税。
                     </p>
@@ -964,14 +1292,15 @@
     </div>
 
     <div class="footer">
-        <p>月平均工资计算器专业增强版 V1.0.0 | 作者：胡皓</p>
+        <p>月平均工资计算器专业增强版 V1.1.0 | 作者：胡皓</p>
         <p style="margin-top: 8px;">
-            <a href="https://github.com/asktai/AiLTK" target="_blank">GitHub仓库</a> | 
-            <a href="https://asktai.github.io/AiLTK/" target="_blank">在线使用</a> | 
-            本工具仅供参考，具体案件请咨询专业律师
+            <a href="https://github.com/asktai/law12gzjsq" target="_blank">GitHub仓库</a> | 
+            <a href="https://asktai.github.io/law12gzjsq/" target="_blank">在线使用</a> | 
+            <a href="https://asktai.github.io/AiLTK/" target="_blank">其它工具集合</a>
         </p>
         <p style="margin-top: 8px; font-size: 12px; opacity: 0.7;">
-            数据来源：各地人社部门公布的社平工资及最低工资标准 | 更新日期：2026年4月
+            数据来源：各地人社部门公布的社平工资及最低工资标准 | 更新日期：2026年4月<br>
+            本工具仅供参考，具体案件请咨询专业律师或当地劳动仲裁部门
         </p>
     </div>
 
@@ -980,6 +1309,7 @@
         window.onload = function() {
             initMonths();
             calculate();
+            initInjurySocialAvg();
         };
 
         // 生成12个月输入框
@@ -1019,6 +1349,7 @@
                             <option value="maternity">产假/生育津贴月</option>
                             <option value="shutdown">停工停产/待岗</option>
                             <option value="dispute">争议月（克扣/降薪）</option>
+                            <option value="injury">工伤医疗期</option>
                             <option value="other">其他非正常出勤</option>
                         </select>
                     </div>
@@ -1098,6 +1429,7 @@
             document.getElementById('statTotal').textContent = totalMonth;
             document.getElementById('statAbnormal').textContent = abnormalMonth;
             document.getElementById('statValid').textContent = validMonth;
+            document.getElementById('statBase').textContent = finalBase.toFixed(0);
 
             // 更新结果显示
             document.getElementById('resTotalMonth').textContent = totalMonth + ' 个月';
@@ -1112,8 +1444,18 @@
             document.getElementById('resMaxCheck').textContent = maxCheck;
             document.getElementById('resFinalBase').textContent = finalBase.toFixed(2) + ' 元';
 
+            // 更新工伤计算器中的本人工资
+            document.getElementById('injuryWage').value = finalBase.toFixed(2);
+            document.getElementById('disputeBase').value = finalBase.toFixed(2);
+            document.getElementById('otherBase').value = finalBase.toFixed(2);
+
             // 计算经济补偿金
             calculateCompensation(finalBase);
+            
+            // 重新计算专项赔偿
+            calculateInjury();
+            calculateDispute();
+            calculateOther();
         }
 
         // 获取地区封顶值
@@ -1124,9 +1466,26 @@
                 'shanghai': 18135 * 3,     // 约54,405元
                 'guangzhou': 13476 * 3,    // 约40,428元
                 'shenzhen': 14530 * 3,     // 约43,590元
+                'hangzhou': 12500 * 3,     // 约37,500元
+                'chengdu': 10500 * 3,      // 约31,500元
                 'other': 999999999         // 不封顶
             };
             return caps[region] || 999999999;
+        }
+
+        // 获取地区社平工资
+        function getRegionSocialAvg() {
+            const region = document.getElementById('regionSelect').value;
+            const avgs = {
+                'beijing': 21396,
+                'shanghai': 18135,
+                'guangzhou': 13476,
+                'shenzhen': 14530,
+                'hangzhou': 12500,
+                'chengdu': 10500,
+                'other': 8000
+            };
+            return avgs[region] || 8000;
         }
 
         function updateRegion() {
@@ -1136,10 +1495,19 @@
                 'shanghai': 18135 * 3,
                 'guangzhou': 13476 * 3,
                 'shenzhen': 14530 * 3,
+                'hangzhou': 12500 * 3,
+                'chengdu': 10500 * 3,
                 'other': ''
             };
             document.getElementById('customCap').value = caps[region] || '';
+            
+            // 更新工伤计算器的社平工资
+            initInjurySocialAvg();
             calculate();
+        }
+
+        function initInjurySocialAvg() {
+            document.getElementById('injurySocialAvg').value = getRegionSocialAvg();
         }
 
         // 计算经济补偿金
@@ -1222,6 +1590,168 @@
             return annualIncome * 0.45 - 181920;
         }
 
+        // 切换Tab
+        function switchTab(tabName) {
+            // 更新Tab样式
+            document.querySelectorAll('.calc-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // 显示对应内容
+            document.querySelectorAll('.calc-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.getElementById(tabName + 'Calc').classList.add('active');
+        }
+
+        // 计算工伤赔偿
+        function calculateInjury() {
+            const level = parseInt(document.getElementById('injuryLevel').value) || 0;
+            const wage = parseFloat(document.getElementById('injuryWage').value) || 0;
+            const socialAvg = parseFloat(document.getElementById('injurySocialAvg').value) || getRegionSocialAvg();
+            const terminate = document.getElementById('injuryTerminate').value === 'yes';
+            
+            if(!level || !wage) {
+                document.getElementById('injuryTotal').textContent = '¥ 0.00';
+                document.getElementById('injuryDetailTable').style.display = 'none';
+                return;
+            }
+            
+            // 一次性伤残补助金标准（本人工资×月数）
+            const disabilityBonus = {
+                1: 27, 2: 25, 3: 23, 4: 21,
+                5: 18, 6: 16, 7: 13, 8: 11, 9: 9, 10: 7
+            };
+            
+            // 计算一次性伤残补助金
+            const bonusMonths = disabilityBonus[level] || 0;
+            const bonusAmount = wage * bonusMonths;
+            
+            let medicalAmount = 0;
+            let employmentAmount = 0;
+            
+            // 解除劳动关系时的额外赔偿（5-10级）
+            if(terminate && level >= 5 && level <= 10) {
+                // 一次性工伤医疗补助金（社平工资×月数）
+                const medicalMonths = {
+                    5: 18, 6: 15, 7: 12, 8: 9, 9: 6, 10: 3
+                };
+                medicalAmount = socialAvg * (medicalMonths[level] || 0);
+                
+                // 一次性伤残就业补助金（社平工资×月数）
+                const employmentMonths = {
+                    5: 18, 6: 15, 7: 12, 8: 9, 9: 6, 10: 3
+                };
+                employmentAmount = socialAvg * (employmentMonths[level] || 0);
+            }
+            
+            const total = bonusAmount + medicalAmount + employmentAmount;
+            
+            document.getElementById('injuryTotal').textContent = '¥ ' + total.toLocaleString('zh-CN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            
+            // 更新明细表格
+            const tbody = document.getElementById('injuryDetailBody');
+            let html = `
+                <tr>
+                    <td>一次性伤残补助金</td>
+                    <td>本人工资${wage.toFixed(2)} × ${bonusMonths}个月</td>
+                    <td>¥ ${bonusAmount.toLocaleString('zh-CN', {minimumFractionDigits: 2})}</td>
+                </tr>
+            `;
+            
+            if(medicalAmount > 0) {
+                html += `
+                    <tr>
+                        <td>一次性工伤医疗补助金</td>
+                        <td>社平工资${socialAvg.toFixed(2)} × ${medicalAmount/socialAvg}个月</td>
+                        <td>¥ ${medicalAmount.toLocaleString('zh-CN', {minimumFractionDigits: 2})}</td>
+                    </tr>
+                `;
+            }
+            
+            if(employmentAmount > 0) {
+                html += `
+                    <tr>
+                        <td>一次性伤残就业补助金</td>
+                        <td>社平工资${socialAvg.toFixed(2)} × ${employmentAmount/socialAvg}个月</td>
+                        <td>¥ ${employmentAmount.toLocaleString('zh-CN', {minimumFractionDigits: 2})}</td>
+                    </tr>
+                `;
+            }
+            
+            tbody.innerHTML = html;
+            document.getElementById('injuryDetailTable').style.display = 'table';
+        }
+
+        // 计算劳动争议赔偿
+        function calculateDispute() {
+            const type = document.getElementById('disputeType').value;
+            const base = parseFloat(document.getElementById('disputeBase').value) || 0;
+            const months = parseFloat(document.getElementById('disputeMonths').value) || 0;
+            const extra = parseFloat(document.getElementById('disputeExtra').value) || 0;
+            
+            let total = 0;
+            let formula = '';
+            
+            switch(type) {
+                case 'unpaid_wage':
+                    // 拖欠工资：100%赔偿金
+                    total = base * months * (1 + 1); // 本金+100%赔偿
+                    formula = '拖欠工资赔偿 = 拖欠金额 × 100%赔偿金<br>依据：《劳动合同法》第85条';
+                    break;
+                case 'overtime':
+                    // 加班费：工作日1.5倍，休息日2倍，法定假日3倍（按平均估算2倍）
+                    total = base / 21.75 * 2 * months * 4; // 假设每月4天加班
+                    formula = '加班费 = 日工资 ÷ 21.75 × 加班天数 × 倍数（平日1.5/休息2/法定3）<br>依据：《劳动法》第44条';
+                    break;
+                case 'annual_leave':
+                    // 未休年假：300%日工资
+                    const dailyWage = base / 21.75;
+                    total = dailyWage * months * 3; // months代表未休天数
+                    formula = '未休年假工资 = 日工资 × 未休天数 × 300%<br>依据：《职工带薪年休假条例》第5条';
+                    break;
+                case 'double_wage':
+                    // 未签合同二倍工资
+                    total = base * months; // 额外一倍
+                    formula = '二倍工资差额 = 月工资 × 未签合同月数（最多11个月）<br>依据：《劳动合同法》第82条';
+                    break;
+                case 'illegal_dismissal':
+                    // 违法解除：2N（已在经济补偿金区计算）
+                    total = base * 2 * months; // months作为年限
+                    formula = '违法解除赔偿金 = 月工资 × 工作年限 × 2<br>依据：《劳动合同法》第87条';
+                    break;
+                case 'social_insurance':
+                    // 未缴社保：通常按损失计算，此处简化
+                    total = base * 0.3 * months; // 估算30%损失
+                    formula = '未缴社保赔偿 = 社保损失估算（实际以社保稽核为准）<br>依据：《社会保险法》第86条';
+                    break;
+                default:
+                    formula = '请选择争议类型查看具体计算公式...';
+            }
+            
+            total += extra;
+            
+            document.getElementById('disputeTotal').textContent = '¥ ' + total.toLocaleString('zh-CN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            document.getElementById('disputeFormula').innerHTML = '<strong>计算说明：</strong><br>' + formula;
+        }
+
+        // 计算其他赔偿
+        function calculateOther() {
+            const type = document.getElementById('otherType').value;
+            const base = parseFloat(document.getElementById('otherBase').value) || 0;
+            const factor = parseFloat(document.getElementById('otherFactor').value) || 0;
+            const extra = parseFloat(document.getElementById('otherExtra').value) || 0;
+            
+            let total = 0;
+            
+            if(type && base && factor) {
+                total = base * factor + extra;
+            }
+            
+            document.getElementById('otherTotal').textContent = '¥ ' + total.toLocaleString('zh-CN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        }
+
         // 批量填充
         function batchFill() {
             const yingfa = prompt('请输入应发工资金额（将填充所有未输入的月份）：', '8000');
@@ -1254,6 +1784,9 @@
             }
             
             document.getElementById('workYears').value = '';
+            document.getElementById('injuryLevel').value = '';
+            document.getElementById('disputeType').value = '';
+            document.getElementById('otherType').value = '';
             calculate();
         }
 
@@ -1331,9 +1864,10 @@
         // 导出数据
         function exportData() {
             const resAvgYingfa = document.getElementById('resAvgYingfa').textContent;
-            const resAvgShifa = document.getElementById('resAvgShifa').textContent;
             const compN = document.getElementById('compN').textContent;
             const comp2N = document.getElementById('comp2N').textContent;
+            const injuryTotal = document.getElementById('injuryTotal').textContent;
+            const disputeTotal = document.getElementById('disputeTotal').textContent;
             
             let detail = '月份,应发工资,实发工资,是否非正常,剔除原因\n';
             for(let i = 0; i < 12; i++) {
@@ -1346,7 +1880,7 @@
 
             const result = `
 ==============================================
-月平均工资计算器专业增强版_胡皓 V1.0.0
+月平均工资计算器专业增强版_胡皓 V1.1.0
 ==============================================
 
 【核算时间】${new Date().toLocaleString()}
@@ -1361,7 +1895,7 @@
 有效月份实发工资总额：${document.getElementById('resTotalShifa').textContent}
 -------------------------------------------
 ✅ 正常月平均应发工资：${resAvgYingfa}
-✅ 正常月平均实发工资：${resAvgShifa}
+✅ 正常月平均实发工资：${document.getElementById('resAvgShifa').textContent}
 -------------------------------------------
 法定下限校验：${document.getElementById('resMinCheck').textContent}
 法定上限校验：${document.getElementById('resMaxCheck').textContent}
@@ -1374,6 +1908,10 @@
 代通知金 +1：${document.getElementById('compN1').textContent}
 N+1 合计：${document.getElementById('compNPlus1').textContent}
 
+【专项赔偿金计算】
+工伤赔偿预估：${injuryTotal}
+劳动争议赔偿预估：${disputeTotal}
+
 【个税估算】
 免税额度：${document.getElementById('taxFree').textContent}
 应纳税所得额：${document.getElementById('taxableIncome').textContent}
@@ -1385,8 +1923,9 @@ ${detail}
 
 ==============================================
 本结果仅供参考，具体案件请咨询专业律师
-作者：胡皓 | GitHub: https://github.com/asktai/AiLTK
-在线版：https://asktai.github.io/AiLTK/
+作者：胡皓 | GitHub: https://github.com/asktai/law12gzjsq
+在线版：https://asktai.github.io/law12gzjsq/
+其它工具：https://asktai.github.io/AiLTK/
 ==============================================
             `;
             
