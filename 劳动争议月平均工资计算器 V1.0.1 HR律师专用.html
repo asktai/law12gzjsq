@@ -1,0 +1,1425 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>月平均工资计算器专业增强版_胡皓 V1.0.0</title>
+    <meta name="author" content="胡皓">
+    <meta name="description" content="基于司法实践的专业HR工资计算器，支持剔除非正常月、经济补偿金N/2N/N+1计算、个税估算">
+    <meta name="keywords" content="12个月平均工资,经济补偿金计算器,2N计算,劳动争议,工资核算">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧮</text></svg>">
+    <style>
+        :root {
+            --primary: #165DFF;
+            --primary-light: #E8F4FD;
+            --danger: #F53F3F;
+            --warning: #FF7D00;
+            --success: #00B42A;
+            --text-primary: #1D2129;
+            --text-secondary: #4E5969;
+            --border: #E5E6EB;
+            --bg: #F2F3F5;
+            --white: #FFFFFF;
+            --shadow: 0 4px 20px rgba(22, 93, 255, 0.08);
+            --shadow-lg: 0 8px 40px rgba(0,0,0,0.12);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+        
+        body {
+            background: var(--bg);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, var(--primary) 0%, #0E42D2 100%);
+            color: var(--white);
+            padding: 40px 0;
+            text-align: center;
+            margin-bottom: 30px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px);
+            background-size: 20px 20px;
+            opacity: 0.3;
+        }
+        
+        .header h1 {
+            font-size: 32px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            position: relative;
+        }
+        
+        .header .subtitle {
+            font-size: 16px;
+            opacity: 0.9;
+            position: relative;
+        }
+        
+        .header .meta {
+            margin-top: 15px;
+            font-size: 13px;
+            opacity: 0.8;
+            position: relative;
+        }
+        
+        .header .meta a {
+            color: var(--white);
+            text-decoration: underline;
+            opacity: 0.9;
+        }
+        
+        /* Layout */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 380px;
+            gap: 24px;
+            margin-bottom: 30px;
+        }
+        
+        @media (max-width: 1024px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        /* Cards */
+        .card {
+            background: var(--white);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            margin-bottom: 24px;
+        }
+        
+        .card-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(to right, var(--white), var(--primary-light));
+        }
+        
+        .card-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .card-body {
+            padding: 24px;
+        }
+        
+        /* Month Grid */
+        .month-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 16px;
+        }
+        
+        .month-card {
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            padding: 16px;
+            transition: all 0.3s ease;
+            position: relative;
+            background: var(--white);
+        }
+        
+        .month-card:hover {
+            border-color: var(--primary);
+            box-shadow: 0 4px 12px rgba(22, 93, 255, 0.1);
+        }
+        
+        .month-card.abnormal {
+            border-color: var(--danger);
+            background: #FFF5F5;
+        }
+        
+        .month-card.abnormal:hover {
+            background: #FFF0F0;
+        }
+        
+        .month-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        
+        .month-name {
+            font-weight: 600;
+            font-size: 15px;
+            color: var(--text-primary);
+        }
+        
+        .month-badge {
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 4px;
+            background: var(--primary-light);
+            color: var(--primary);
+            font-weight: 500;
+        }
+        
+        .month-card.abnormal .month-badge {
+            background: #FFE4E4;
+            color: var(--danger);
+        }
+        
+        .input-group {
+            margin-bottom: 10px;
+        }
+        
+        .input-group label {
+            display: block;
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+            font-weight: 500;
+        }
+        
+        .input-group input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 14px;
+            transition: all 0.2s;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .input-group input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(22, 93, 255, 0.1);
+        }
+        
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px dashed var(--border);
+        }
+        
+        .checkbox-group input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+            accent-color: var(--danger);
+        }
+        
+        .checkbox-group label {
+            font-size: 12px;
+            color: var(--danger);
+            cursor: pointer;
+            font-weight: 500;
+        }
+        
+        .abnormal-reason {
+            margin-top: 8px;
+            display: none;
+        }
+        
+        .month-card.abnormal .abnormal-reason {
+            display: block;
+        }
+        
+        .abnormal-reason select {
+            width: 100%;
+            padding: 6px 10px;
+            border: 1px solid var(--danger);
+            border-radius: 6px;
+            font-size: 12px;
+            background: var(--white);
+            color: var(--text-primary);
+        }
+        
+        /* Settings Panel */
+        .settings-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+        
+        @media (max-width: 600px) {
+            .settings-row {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .setting-item {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        
+        .setting-item label {
+            font-size: 13px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+        
+        .setting-item input, .setting-item select {
+            padding: 10px 12px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 14px;
+            background: var(--white);
+        }
+        
+        /* Results Panel */
+        .result-section {
+            background: linear-gradient(135deg, #F0F9FF 0%, #E0F2FE 100%);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .result-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .result-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px dashed #CBD5E1;
+            font-size: 14px;
+        }
+        
+        .result-row:last-child {
+            border-bottom: none;
+        }
+        
+        .result-label {
+            color: var(--text-secondary);
+        }
+        
+        .result-value {
+            font-weight: 600;
+            color: var(--text-primary);
+            font-family: 'Courier New', monospace;
+        }
+        
+        .result-value.highlight {
+            color: var(--primary);
+            font-size: 18px;
+        }
+        
+        .result-value.danger {
+            color: var(--danger);
+        }
+        
+        /* Compensation Calculator */
+        .comp-calc {
+            background: linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%);
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            border: 1px solid #FDE68A;
+        }
+        
+        .comp-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--warning);
+            margin-bottom: 16px;
+        }
+        
+        .comp-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        
+        .comp-result-box {
+            background: var(--white);
+            border-radius: 8px;
+            padding: 16px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+        
+        .comp-result-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+        }
+        
+        .comp-result-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text-primary);
+            font-family: 'Courier New', monospace;
+        }
+        
+        .comp-result-value.n { color: var(--primary); }
+        .comp-result-value.n1 { color: var(--warning); }
+        .comp-result-value.n2 { color: var(--danger); }
+        
+        /* Buttons */
+        .btn-group {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .btn-primary {
+            background: var(--primary);
+            color: var(--white);
+        }
+        
+        .btn-primary:hover {
+            background: #0E42D2;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(22, 93, 255, 0.3);
+        }
+        
+        .btn-secondary {
+            background: var(--white);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+        }
+        
+        .btn-secondary:hover {
+            background: var(--bg);
+            border-color: var(--primary);
+        }
+        
+        .btn-danger {
+            background: var(--danger);
+            color: var(--white);
+        }
+        
+        .btn-danger:hover {
+            background: #D9363E;
+        }
+        
+        .btn-success {
+            background: var(--success);
+            color: var(--white);
+        }
+        
+        /* Legal Reference */
+        .legal-box {
+            background: #F0FDF4;
+            border-left: 4px solid var(--success);
+            padding: 16px 20px;
+            border-radius: 0 8px 8px 0;
+            margin: 20px 0;
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.8;
+        }
+        
+        .legal-box strong {
+            color: var(--text-primary);
+        }
+        
+        /* Info Tags */
+        .info-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+            margin-right: 8px;
+            margin-bottom: 8px;
+        }
+        
+        .tag-blue { background: var(--primary-light); color: var(--primary); }
+        .tag-red { background: #FFE4E4; color: var(--danger); }
+        .tag-green { background: #DCFCE7; color: var(--success); }
+        .tag-orange { background: #FFEDD5; color: var(--warning); }
+        
+        /* Tax Section */
+        .tax-section {
+            background: linear-gradient(135deg, #F3E8FF 0%, #E9D5FF 100%);
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        
+        .tax-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #7C3AED;
+            margin-bottom: 16px;
+        }
+        
+        /* Print Styles */
+        @media print {
+            .btn-group, .settings-panel .btn-group, .no-print {
+                display: none !important;
+            }
+            
+            .card {
+                box-shadow: none;
+                border: 1px solid #ddd;
+            }
+            
+            body {
+                background: white;
+            }
+        }
+        
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal.active {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: var(--white);
+            border-radius: 12px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            padding: 30px;
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .modal-title {
+            font-size: 20px;
+            font-weight: 600;
+        }
+        
+        .modal-close {
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--text-secondary);
+            line-height: 1;
+        }
+        
+        .modal-close:hover {
+            color: var(--text-primary);
+        }
+        
+        /* Quick Actions */
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 16px;
+        }
+        
+        .quick-btn {
+            padding: 10px;
+            border: 1px dashed var(--border);
+            border-radius: 6px;
+            background: var(--white);
+            cursor: pointer;
+            font-size: 12px;
+            text-align: center;
+            transition: all 0.2s;
+        }
+        
+        .quick-btn:hover {
+            border-color: var(--primary);
+            background: var(--primary-light);
+            color: var(--primary);
+        }
+        
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-secondary);
+            font-size: 13px;
+            border-top: 1px solid var(--border);
+            margin-top: 40px;
+        }
+        
+        .footer a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .month-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 24px;
+            }
+            
+            .comp-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        /* Animation */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .card {
+            animation: fadeIn 0.4s ease-out;
+        }
+        
+        /* Stats Bar */
+        .stats-bar {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .stat-item {
+            background: var(--white);
+            padding: 12px 20px;
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .stat-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+        
+        .stat-icon.blue { background: var(--primary-light); }
+        .stat-icon.red { background: #FFE4E4; }
+        .stat-icon.green { background: #DCFCE7; }
+        
+        .stat-info {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .stat-value {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🧮 月平均工资计算器专业增强版</h1>
+        <p class="subtitle">基于司法实践 · 智能剔除非正常月 · 经济补偿金N/2N/N+1计算</p>
+        <p class="meta">
+            作者：胡皓 | 版本：V1.0.0 | 
+            <a href="https://github.com/asktai/AiLTK" target="_blank">GitHub</a> | 
+            <a href="https://asktai.github.io/AiLTK/" target="_blank">在线版</a>
+        </p>
+    </div>
+
+    <div class="container">
+        <!-- Stats Bar -->
+        <div class="stats-bar no-print">
+            <div class="stat-item">
+                <div class="stat-icon blue">📊</div>
+                <div class="stat-info">
+                    <span class="stat-value" id="statTotal">12</span>
+                    <span class="stat-label">总月份</span>
+                </div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-icon red">⚠️</div>
+                <div class="stat-info">
+                    <span class="stat-value" id="statAbnormal">0</span>
+                    <span class="stat-label">非正常月</span>
+                </div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-icon green">✓</div>
+                <div class="stat-info">
+                    <span class="stat-value" id="statValid">12</span>
+                    <span class="stat-label">有效月份</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="main-grid">
+            <!-- Left Column: Input Area -->
+            <div class="left-column">
+                <!-- Settings Card -->
+                <div class="card settings-panel">
+                    <div class="card-header">
+                        <div class="card-title">⚙️ 计算设置</div>
+                    </div>
+                    <div class="card-body">
+                        <div class="settings-row">
+                            <div class="setting-item">
+                                <label>所在地区（影响社平工资3倍封顶）</label>
+                                <select id="regionSelect" onchange="updateRegion()">
+                                    <option value="beijing">北京（2025年：约21,396元/月）</option>
+                                    <option value="shanghai">上海（2025年：约18,135元/月）</option>
+                                    <option value="guangzhou">广州（2025年：约13,476元/月）</option>
+                                    <option value="shenzhen">深圳（2025年：约14,530元/月）</option>
+                                    <option value="other" selected>其他城市</option>
+                                </select>
+                            </div>
+                            <div class="setting-item">
+                                <label>自定义社平工资3倍封顶额（元/月）</label>
+                                <input type="number" id="customCap" placeholder="自动根据地区计算" value="">
+                            </div>
+                        </div>
+                        <div class="settings-row">
+                            <div class="setting-item">
+                                <label>当地最低工资标准（元/月）</label>
+                                <input type="number" id="minWage" placeholder="例如：2420" value="2420">
+                            </div>
+                            <div class="setting-item">
+                                <label>工作年限（年，用于计算补偿金）</label>
+                                <input type="number" id="workYears" placeholder="例如：3.5" step="0.1" value="">
+                            </div>
+                        </div>
+                        
+                        <div class="info-tags" style="margin-top: 16px;">
+                            <span class="info-tag tag-blue">💡 应发工资口径</span>
+                            <span class="info-tag tag-red">⚠️ 含加班费地区：北京/深圳/杭州/江苏</span>
+                            <span class="info-tag tag-green">✓ 不含加班费：四川/上海</span>
+                            <span class="info-tag tag-orange">📌 年终奖按12个月分摊</span>
+                        </div>
+                        
+                        <div class="btn-group no-print">
+                            <button class="btn btn-primary" onclick="calculate()">🔄 立即计算</button>
+                            <button class="btn btn-secondary" onclick="batchFill()">📋 批量填充</button>
+                            <button class="btn btn-secondary" onclick="clearAll()">🗑️ 清空数据</button>
+                            <button class="btn btn-secondary" onclick="loadExample()">📖 加载示例</button>
+                        </div>
+                        
+                        <div class="quick-actions no-print">
+                            <div class="quick-btn" onclick="markAllNormal()">全部设为正常月</div>
+                            <div class="quick-btn" onclick="markLastMonthAbnormal()">最后1个月非正常</div>
+                            <div class="quick-btn" onclick="markSickLeave()">标记病假月份</div>
+                            <div class="quick-btn" onclick="markEntryExit()">标记入职/离职月</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Month Input Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">📅 12个月工资录入（应发工资口径）</div>
+                        <span style="font-size: 13px; color: var(--text-secondary);">支持逐月输入或批量操作</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="legal-box">
+                            <strong>法律依据：</strong>根据《劳动合同法》第47条及《实施条例》第27条，月工资按照劳动者<strong>应得工资</strong>计算，包括计时/计件工资、奖金、津贴补贴等货币性收入。<br>
+                            <strong>剔除非正常月：</strong>根据最高人民法院(2023)最高法民申2918号裁定，是否剔除非正常工作期间工资存在地区差异。东莞地区明确剔除非正常出勤月份，其他地区建议咨询当地口径。
+                        </div>
+                        
+                        <div class="month-grid" id="monthContainer">
+                            <!-- Generated by JS -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Results -->
+            <div class="right-column">
+                <!-- Calculation Results -->
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">📊 核算结果</div>
+                    </div>
+                    <div class="card-body">
+                        <div class="result-section">
+                            <div class="result-title">📈 基础统计</div>
+                            <div class="result-row">
+                                <span class="result-label">总录入月份</span>
+                                <span class="result-value" id="resTotalMonth">12 个月</span>
+                            </div>
+                            <div class="result-row">
+                                <span class="result-label">非正常月份（已剔除）</span>
+                                <span class="result-value danger" id="resAbnormalMonth">0 个月</span>
+                            </div>
+                            <div class="result-row">
+                                <span class="result-label">有效正常月份</span>
+                                <span class="result-value" id="resValidMonth">12 个月</span>
+                            </div>
+                        </div>
+
+                        <div class="result-section">
+                            <div class="result-title">💰 工资核算</div>
+                            <div class="result-row">
+                                <span class="result-label">有效月份应发工资总额</span>
+                                <span class="result-value" id="resTotalYingfa">0.00 元</span>
+                            </div>
+                            <div class="result-row">
+                                <span class="result-label">有效月份实发工资总额</span>
+                                <span class="result-value" id="resTotalShifa">0.00 元</span>
+                            </div>
+                            <div class="result-row" style="border-top: 2px solid var(--primary); padding-top: 12px; margin-top: 8px;">
+                                <span class="result-label">✅ 正常月平均应发工资</span>
+                                <span class="result-value highlight" id="resAvgYingfa">0.00 元</span>
+                            </div>
+                            <div class="result-row">
+                                <span class="result-label">✅ 正常月平均实发工资</span>
+                                <span class="result-value highlight" id="resAvgShifa">0.00 元</span>
+                            </div>
+                        </div>
+
+                        <div class="result-section" style="background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%);">
+                            <div class="result-title">⚖️ 法定上下限校验</div>
+                            <div class="result-row">
+                                <span class="result-label">最低工资保障</span>
+                                <span class="result-value" id="resMinCheck">-</span>
+                            </div>
+                            <div class="result-row">
+                                <span class="result-label">社平工资3倍封顶</span>
+                                <span class="result-value" id="resMaxCheck">-</span>
+                            </div>
+                            <div class="result-row">
+                                <span class="result-label">最终计算基数</span>
+                                <span class="result-value highlight" id="resFinalBase">0.00 元</span>
+                            </div>
+                        </div>
+
+                        <!-- Compensation Calculator -->
+                        <div class="comp-calc">
+                            <div class="comp-title">🧮 经济补偿金计算器（N/2N/N+1）</div>
+                            <div class="comp-grid">
+                                <div class="comp-result-box">
+                                    <div class="comp-result-label">经济补偿金 N</div>
+                                    <div class="comp-result-value n" id="compN">0</div>
+                                    <div style="font-size: 11px; color: var(--text-secondary); margin-top: 4px;">协商解除/合法终止</div>
+                                </div>
+                                <div class="comp-result-box">
+                                    <div class="comp-result-label">违法解除赔偿金 2N</div>
+                                    <div class="comp-result-value n2" id="comp2N">0</div>
+                                    <div style="font-size: 11px; color: var(--text-secondary); margin-top: 4px;">违法辞退/恶意开除</div>
+                                </div>
+                            </div>
+                            <div class="comp-grid">
+                                <div class="comp-result-box">
+                                    <div class="comp-result-label">代通知金 +1</div>
+                                    <div class="comp-result-value n1" id="compN1">0</div>
+                                    <div style="font-size: 11px; color: var(--text-secondary); margin-top: 4px;">未提前30日通知</div>
+                                </div>
+                                <div class="comp-result-box">
+                                    <div class="comp-result-label">N+1 合计</div>
+                                    <div class="comp-result-value" id="compNPlus1" style="color: var(--warning);">0</div>
+                                    <div style="font-size: 11px; color: var(--text-secondary); margin-top: 4px;">裁员/协商一致</div>
+                                </div>
+                            </div>
+                            <div style="font-size: 12px; color: var(--text-secondary); margin-top: 12px; text-align: center;">
+                                * 计算结果基于右侧输入的工作年限和平均工资基数
+                            </div>
+                        </div>
+
+                        <!-- Tax Estimation -->
+                        <div class="tax-section">
+                            <div class="tax-title">📝 个税估算（经济补偿金）</div>
+                            <div class="result-row">
+                                <span class="result-label">免税额度（社平3倍）</span>
+                                <span class="result-value" id="taxFree">0 元</span>
+                            </div>
+                            <div class="result-row">
+                                <span class="result-label">应纳税所得额</span>
+                                <span class="result-value" id="taxableIncome">0 元</span>
+                            </div>
+                            <div class="result-row">
+                                <span class="result-label">预估个人所得税</span>
+                                <span class="result-value danger" id="taxAmount">0 元</span>
+                            </div>
+                            <div class="result-row" style="border-top: 1px dashed #C4B5FD; padding-top: 10px; margin-top: 8px;">
+                                <span class="result-label">税后实得补偿金</span>
+                                <span class="result-value highlight" id="afterTaxComp">0 元</span>
+                            </div>
+                            <div style="font-size: 11px; color: #7C3AED; margin-top: 12px;">
+                                * 根据财税〔2018〕164号：补偿金在当地上年职工平均工资3倍以内部分免征个税；超过部分单独计税
+                            </div>
+                        </div>
+
+                        <div class="btn-group no-print" style="margin-top: 20px;">
+                            <button class="btn btn-success" onclick="exportData()">💾 导出核算记录</button>
+                            <button class="btn btn-secondary" onclick="printCalc()">🖨️ 打印报告</button>
+                            <button class="btn btn-primary" onclick="showLegalRef()">📚 法律依据</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Legal Reference Modal -->
+        <div class="modal" id="legalModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div class="modal-title">📚 法律依据与实务指南</div>
+                    <span class="modal-close" onclick="closeModal()">&times;</span>
+                </div>
+                <div style="font-size: 14px; line-height: 1.8; color: var(--text-secondary);">
+                    <h3 style="color: var(--primary); margin-bottom: 12px;">一、核心法条</h3>
+                    <p style="margin-bottom: 16px;">
+                        <strong>《劳动合同法》第四十七条：</strong>经济补偿按劳动者在本单位工作的年限，每满一年支付一个月工资的标准向劳动者支付。六个月以上不满一年的，按一年计算；不满六个月的，向劳动者支付半个月工资的经济补偿。<br><br>
+                        劳动者月工资高于用人单位所在直辖市、设区的市级人民政府公布的本地区上年度职工月平均工资三倍的，向其支付经济补偿的标准按职工月平均工资三倍的数额支付，向其支付经济补偿的年限最高不超过十二年。
+                    </p>
+                    
+                    <h3 style="color: var(--primary); margin-bottom: 12px;">二、计算基数界定</h3>
+                    <p style="margin-bottom: 16px;">
+                        <strong>《劳动合同法实施条例》第二十七条：</strong>劳动合同法第四十七条规定的经济补偿的月工资按照劳动者<strong>应得工资</strong>计算，包括计时工资或者计件工资以及奖金、津贴和补贴等货币性收入。<br><br>
+                        劳动者在劳动合同解除或者终止前12个月的平均工资低于当地最低工资标准的，按照当地最低工资标准计算。劳动者工作不满12个月的，按照实际工作的月数计算平均工资。
+                    </p>
+                    
+                    <h3 style="color: var(--primary); margin-bottom: 12px;">三、剔除非正常月的司法实践</h3>
+                    <p style="margin-bottom: 16px;">
+                        <strong>最高人民法院(2023)最高法民申2918号裁定：</strong>认为劳动者关于"十二个月的平均工资"应为劳动合同解除或者终止前劳动者正常工作状态下十二个月的平均工资，不包括公司放假、医疗期等非正常工作期间的工资，<strong>缺乏法律依据</strong>。<br><br>
+                        <strong>地区差异：</strong><br>
+                        • 东莞地区（东中法﹝2019﹞73号）：明确剔除非正常出勤月份的工资<br>
+                        • 四川地区（川高法民一〔2016〕1号）：按正常工作状态下十二个月的应得工资计算，不包括加班工资、非常规性奖金<br>
+                        • 其他地区：建议结合当地裁审口径综合判断
+                    </p>
+                    
+                    <h3 style="color: var(--primary); margin-bottom: 12px;">四、个税政策</h3>
+                    <p>
+                        <strong>财税〔2018〕164号：</strong>个人与用人单位解除劳动关系取得一次性补偿收入（包括经济补偿金、生活补助费和其他补助费），在当地上年职工平均工资3倍数额以内的部分，免征个人所得税；超过3倍数额的部分，不并入当年综合所得，单独适用综合所得税率表，计算纳税。
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>月平均工资计算器专业增强版 V1.0.0 | 作者：胡皓</p>
+        <p style="margin-top: 8px;">
+            <a href="https://github.com/asktai/AiLTK" target="_blank">GitHub仓库</a> | 
+            <a href="https://asktai.github.io/AiLTK/" target="_blank">在线使用</a> | 
+            本工具仅供参考，具体案件请咨询专业律师
+        </p>
+        <p style="margin-top: 8px; font-size: 12px; opacity: 0.7;">
+            数据来源：各地人社部门公布的社平工资及最低工资标准 | 更新日期：2026年4月
+        </p>
+    </div>
+
+    <script>
+        // 初始化
+        window.onload = function() {
+            initMonths();
+            calculate();
+        };
+
+        // 生成12个月输入框
+        function initMonths() {
+            const container = document.getElementById('monthContainer');
+            const months = ['第1个月', '第2个月', '第3个月', '第4个月', '第5个月', '第6个月', 
+                          '第7个月', '第8个月', '第9个月', '第10个月', '第11个月', '第12个月（最近）'];
+            
+            let html = '';
+            for(let i = 0; i < 12; i++) {
+                html += `
+                <div class="month-card" id="monthCard${i}">
+                    <div class="month-header">
+                        <span class="month-name">${months[i]}</span>
+                        <span class="month-badge" id="badge${i}">正常月</span>
+                    </div>
+                    <div class="input-group">
+                        <label>应发工资（元）</label>
+                        <input type="number" min="0" step="0.01" class="yingfa" id="yingfa${i}" 
+                               placeholder="0.00" onchange="calculate()">
+                    </div>
+                    <div class="input-group">
+                        <label>实发工资（元）</label>
+                        <input type="number" min="0" step="0.01" class="shifa" id="shifa${i}" 
+                               placeholder="0.00" onchange="calculate()">
+                    </div>
+                    <div class="checkbox-group">
+                        <input type="checkbox" class="isAbnormal" id="abnormal${i}" onchange="toggleAbnormal(${i})">
+                        <label for="abnormal${i}">标记为非正常月（自动剔除）</label>
+                    </div>
+                    <div class="abnormal-reason">
+                        <select id="reason${i}" onchange="calculate()">
+                            <option value="">选择剔除非正常月原因...</option>
+                            <option value="entry">入职/离职不足月</option>
+                            <option value="sick">病假/医疗期（超10天）</option>
+                            <option value="personal">事假/旷工（超5天）</option>
+                            <option value="maternity">产假/生育津贴月</option>
+                            <option value="shutdown">停工停产/待岗</option>
+                            <option value="dispute">争议月（克扣/降薪）</option>
+                            <option value="other">其他非正常出勤</option>
+                        </select>
+                    </div>
+                </div>
+                `;
+            }
+            container.innerHTML = html;
+        }
+
+        // 切换非正常月状态
+        function toggleAbnormal(index) {
+            const card = document.getElementById(`monthCard${index}`);
+            const checkbox = document.getElementById(`abnormal${index}`);
+            const badge = document.getElementById(`badge${index}`);
+            
+            if(checkbox.checked) {
+                card.classList.add('abnormal');
+                badge.textContent = '已剔除';
+            } else {
+                card.classList.remove('abnormal');
+                badge.textContent = '正常月';
+            }
+            calculate();
+        }
+
+        // 核心计算逻辑
+        function calculate() {
+            let totalMonth = 12;
+            let abnormalMonth = 0;
+            let validMonth = 0;
+            let totalYingfa = 0;
+            let totalShifa = 0;
+
+            // 收集数据
+            for(let i = 0; i < 12; i++) {
+                const yingfa = parseFloat(document.getElementById(`yingfa${i}`).value) || 0;
+                const shifa = parseFloat(document.getElementById(`shifa${i}`).value) || 0;
+                const isAbnormal = document.getElementById(`abnormal${i}`).checked;
+
+                if(isAbnormal) {
+                    abnormalMonth++;
+                } else {
+                    validMonth++;
+                    totalYingfa += yingfa;
+                    totalShifa += shifa;
+                }
+            }
+
+            // 计算平均值
+            const avgYingfa = validMonth > 0 ? (totalYingfa / validMonth) : 0;
+            const avgShifa = validMonth > 0 ? (totalShifa / validMonth) : 0;
+
+            // 获取设置
+            const minWage = parseFloat(document.getElementById('minWage').value) || 2420;
+            const regionCap = getRegionCap();
+            const customCap = parseFloat(document.getElementById('customCap').value);
+            const finalCap = customCap || regionCap;
+
+            // 法定上下限处理
+            let finalBase = avgYingfa;
+            let minCheck = '通过';
+            let maxCheck = '未触发';
+
+            if(finalBase < minWage) {
+                finalBase = minWage;
+                minCheck = `已调整至最低工资 ${minWage.toFixed(2)} 元`;
+            }
+
+            if(finalBase > finalCap) {
+                finalBase = finalCap;
+                maxCheck = `已封顶至社平3倍 ${finalCap.toFixed(2)} 元`;
+            } else {
+                maxCheck = `未超过社平3倍 ${finalCap.toFixed(2)} 元`;
+            }
+
+            // 更新统计栏
+            document.getElementById('statTotal').textContent = totalMonth;
+            document.getElementById('statAbnormal').textContent = abnormalMonth;
+            document.getElementById('statValid').textContent = validMonth;
+
+            // 更新结果显示
+            document.getElementById('resTotalMonth').textContent = totalMonth + ' 个月';
+            document.getElementById('resAbnormalMonth').textContent = abnormalMonth + ' 个月';
+            document.getElementById('resValidMonth').textContent = validMonth + ' 个月';
+            document.getElementById('resTotalYingfa').textContent = totalYingfa.toFixed(2) + ' 元';
+            document.getElementById('resTotalShifa').textContent = totalShifa.toFixed(2) + ' 元';
+            document.getElementById('resAvgYingfa').textContent = avgYingfa.toFixed(2) + ' 元';
+            document.getElementById('resAvgShifa').textContent = avgShifa.toFixed(2) + ' 元';
+            
+            document.getElementById('resMinCheck').textContent = minCheck;
+            document.getElementById('resMaxCheck').textContent = maxCheck;
+            document.getElementById('resFinalBase').textContent = finalBase.toFixed(2) + ' 元';
+
+            // 计算经济补偿金
+            calculateCompensation(finalBase);
+        }
+
+        // 获取地区封顶值
+        function getRegionCap() {
+            const region = document.getElementById('regionSelect').value;
+            const caps = {
+                'beijing': 21396 * 3,      // 约64,188元
+                'shanghai': 18135 * 3,     // 约54,405元
+                'guangzhou': 13476 * 3,    // 约40,428元
+                'shenzhen': 14530 * 3,     // 约43,590元
+                'other': 999999999         // 不封顶
+            };
+            return caps[region] || 999999999;
+        }
+
+        function updateRegion() {
+            const region = document.getElementById('regionSelect').value;
+            const caps = {
+                'beijing': 21396 * 3,
+                'shanghai': 18135 * 3,
+                'guangzhou': 13476 * 3,
+                'shenzhen': 14530 * 3,
+                'other': ''
+            };
+            document.getElementById('customCap').value = caps[region] || '';
+            calculate();
+        }
+
+        // 计算经济补偿金
+        function calculateCompensation(base) {
+            const workYears = parseFloat(document.getElementById('workYears').value) || 0;
+            
+            // 计算N
+            let N = 0;
+            if(workYears > 0) {
+                const fullYears = Math.floor(workYears);
+                const remainder = workYears - fullYears;
+                
+                if(remainder >= 0.5) {
+                    N = (fullYears + 1) * base;
+                } else if(remainder > 0) {
+                    N = fullYears * base + base * 0.5;
+                } else {
+                    N = fullYears * base;
+                }
+            }
+
+            // 封顶处理（如果超过社平3倍且工作年限>12年）
+            const region = document.getElementById('regionSelect').value;
+            const cap = getRegionCap();
+            if(base >= cap / 3 && workYears > 12) {
+                N = 12 * (cap / 3); // 12年封顶
+            }
+
+            const N2 = N * 2;
+            const N1 = base; // 代通知金通常为一个月工资
+            const NPlus1 = N + N1;
+
+            document.getElementById('compN').textContent = '¥ ' + N.toLocaleString('zh-CN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            document.getElementById('comp2N').textContent = '¥ ' + N2.toLocaleString('zh-CN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            document.getElementById('compN1').textContent = '¥ ' + N1.toLocaleString('zh-CN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            document.getElementById('compNPlus1').textContent = '¥ ' + NPlus1.toLocaleString('zh-CN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+
+            // 计算个税
+            calculateTax(N);
+        }
+
+        // 计算个税
+        function calculateTax(compensation) {
+            const regionCap = getRegionCap() / 3; // 社平工资
+            const taxFree = regionCap * 3; // 免税额度（社平3倍）
+            
+            let taxableIncome = 0;
+            let taxAmount = 0;
+            
+            if(compensation > taxFree) {
+                taxableIncome = compensation - taxFree;
+                
+                // 单独计税（按工作年限分摊）
+                const workYears = parseFloat(document.getElementById('workYears').value) || 1;
+                const avgMonthly = taxableIncome / Math.min(workYears, 12);
+                
+                // 使用综合所得税率表计算
+                taxAmount = calculateTaxByBracket(avgMonthly) * Math.min(workYears, 12);
+            }
+
+            const afterTax = compensation - taxAmount;
+
+            document.getElementById('taxFree').textContent = '¥ ' + taxFree.toLocaleString('zh-CN', {minimumFractionDigits: 2});
+            document.getElementById('taxableIncome').textContent = '¥ ' + taxableIncome.toLocaleString('zh-CN', {minimumFractionDigits: 2});
+            document.getElementById('taxAmount').textContent = '¥ ' + taxAmount.toLocaleString('zh-CN', {minimumFractionDigits: 2});
+            document.getElementById('afterTaxComp').textContent = '¥ ' + afterTax.toLocaleString('zh-CN', {minimumFractionDigits: 2});
+        }
+
+        // 按税率表计算
+        function calculateTaxByBracket(monthlyIncome) {
+            // 2019年后综合所得税率表（年度换算为月度近似）
+            const annualIncome = monthlyIncome * 12;
+            
+            if(annualIncome <= 36000) return annualIncome * 0.03;
+            if(annualIncome <= 144000) return annualIncome * 0.10 - 2520;
+            if(annualIncome <= 300000) return annualIncome * 0.20 - 16920;
+            if(annualIncome <= 420000) return annualIncome * 0.25 - 31920;
+            if(annualIncome <= 660000) return annualIncome * 0.30 - 52920;
+            if(annualIncome <= 960000) return annualIncome * 0.35 - 85920;
+            return annualIncome * 0.45 - 181920;
+        }
+
+        // 批量填充
+        function batchFill() {
+            const yingfa = prompt('请输入应发工资金额（将填充所有未输入的月份）：', '8000');
+            if(yingfa === null) return;
+            
+            const shifa = prompt('请输入实发工资金额（将填充所有未输入的月份）：', '7500');
+            if(shifa === null) return;
+
+            for(let i = 0; i < 12; i++) {
+                const yingfaInput = document.getElementById(`yingfa${i}`);
+                const shifaInput = document.getElementById(`shifa${i}`);
+                
+                if(!yingfaInput.value) yingfaInput.value = yingfa;
+                if(!shifaInput.value) shifaInput.value = shifa;
+            }
+            calculate();
+        }
+
+        // 清空数据
+        function clearAll() {
+            if(!confirm('确定要清空所有数据吗？')) return;
+            
+            for(let i = 0; i < 12; i++) {
+                document.getElementById(`yingfa${i}`).value = '';
+                document.getElementById(`shifa${i}`).value = '';
+                document.getElementById(`abnormal${i}`).checked = false;
+                document.getElementById(`reason${i}`).value = '';
+                document.getElementById(`monthCard${i}`).classList.remove('abnormal');
+                document.getElementById(`badge${i}`).textContent = '正常月';
+            }
+            
+            document.getElementById('workYears').value = '';
+            calculate();
+        }
+
+        // 加载示例数据
+        function loadExample() {
+            const exampleData = [
+                {yingfa: 8500, shifa: 7800, abnormal: false},
+                {yingfa: 8500, shifa: 7800, abnormal: false},
+                {yingfa: 8500, shifa: 7800, abnormal: false},
+                {yingfa: 9000, shifa: 8200, abnormal: false}, // 调薪
+                {yingfa: 9000, shifa: 8200, abnormal: false},
+                {yingfa: 9000, shifa: 8200, abnormal: false},
+                {yingfa: 9000, shifa: 8200, abnormal: false},
+                {yingfa: 9000, shifa: 8200, abnormal: false},
+                {yingfa: 3000, shifa: 2500, abnormal: true, reason: 'sick'}, // 病假月
+                {yingfa: 9000, shifa: 8200, abnormal: false},
+                {yingfa: 12000, shifa: 11000, abnormal: false}, // 含年终奖分摊
+                {yingfa: 9000, shifa: 8200, abnormal: false}
+            ];
+
+            for(let i = 0; i < 12; i++) {
+                const data = exampleData[i];
+                document.getElementById(`yingfa${i}`).value = data.yingfa;
+                document.getElementById(`shifa${i}`).value = data.shifa;
+                
+                if(data.abnormal) {
+                    document.getElementById(`abnormal${i}`).checked = true;
+                    document.getElementById(`reason${i}`).value = data.reason;
+                    toggleAbnormal(i);
+                }
+            }
+            
+            document.getElementById('workYears').value = '3.5';
+            calculate();
+        }
+
+        // 快捷操作
+        function markAllNormal() {
+            for(let i = 0; i < 12; i++) {
+                document.getElementById(`abnormal${i}`).checked = false;
+                toggleAbnormal(i);
+            }
+        }
+
+        function markLastMonthAbnormal() {
+            document.getElementById(`abnormal11`).checked = true;
+            document.getElementById(`reason11`).value = 'dispute';
+            toggleAbnormal(11);
+        }
+
+        function markSickLeave() {
+            const months = prompt('请输入病假月份编号（1-12，多个用逗号分隔）：', '9');
+            if(!months) return;
+            
+            months.split(',').forEach(m => {
+                const idx = parseInt(m.trim()) - 1;
+                if(idx >= 0 && idx < 12) {
+                    document.getElementById(`abnormal${idx}`).checked = true;
+                    document.getElementById(`reason${idx}`).value = 'sick';
+                    toggleAbnormal(idx);
+                }
+            });
+        }
+
+        function markEntryExit() {
+            document.getElementById(`abnormal0`).checked = true;
+            document.getElementById(`reason0`).value = 'entry';
+            toggleAbnormal(0);
+            
+            document.getElementById(`abnormal11`).checked = true;
+            document.getElementById(`reason11`).value = 'entry';
+            toggleAbnormal(11);
+        }
+
+        // 导出数据
+        function exportData() {
+            const resAvgYingfa = document.getElementById('resAvgYingfa').textContent;
+            const resAvgShifa = document.getElementById('resAvgShifa').textContent;
+            const compN = document.getElementById('compN').textContent;
+            const comp2N = document.getElementById('comp2N').textContent;
+            
+            let detail = '月份,应发工资,实发工资,是否非正常,剔除原因\n';
+            for(let i = 0; i < 12; i++) {
+                const yingfa = document.getElementById(`yingfa${i}`).value || '0';
+                const shifa = document.getElementById(`shifa${i}`).value || '0';
+                const abnormal = document.getElementById(`abnormal${i}`).checked ? '是' : '否';
+                const reason = document.getElementById(`reason${i}`).value || '';
+                detail += `${i+1},${yingfa},${shifa},${abnormal},${reason}\n`;
+            }
+
+            const result = `
+==============================================
+月平均工资计算器专业增强版_胡皓 V1.0.0
+==============================================
+
+【核算时间】${new Date().toLocaleString()}
+
+【基础统计】
+总录入月份：${document.getElementById('resTotalMonth').textContent}
+非正常月份（已剔除）：${document.getElementById('resAbnormalMonth').textContent}
+有效正常月份：${document.getElementById('resValidMonth').textContent}
+
+【工资核算结果】
+有效月份应发工资总额：${document.getElementById('resTotalYingfa').textContent}
+有效月份实发工资总额：${document.getElementById('resTotalShifa').textContent}
+-------------------------------------------
+✅ 正常月平均应发工资：${resAvgYingfa}
+✅ 正常月平均实发工资：${resAvgShifa}
+-------------------------------------------
+法定下限校验：${document.getElementById('resMinCheck').textContent}
+法定上限校验：${document.getElementById('resMaxCheck').textContent}
+最终计算基数：${document.getElementById('resFinalBase').textContent}
+
+【经济补偿金计算】
+工作年限：${document.getElementById('workYears').value || '0'} 年
+经济补偿金 N：${compN}
+违法解除赔偿金 2N：${comp2N}
+代通知金 +1：${document.getElementById('compN1').textContent}
+N+1 合计：${document.getElementById('compNPlus1').textContent}
+
+【个税估算】
+免税额度：${document.getElementById('taxFree').textContent}
+应纳税所得额：${document.getElementById('taxableIncome').textContent}
+预估个人所得税：${document.getElementById('taxAmount').textContent}
+税后实得补偿金：${document.getElementById('afterTaxComp').textContent}
+
+【详细数据】
+${detail}
+
+==============================================
+本结果仅供参考，具体案件请咨询专业律师
+作者：胡皓 | GitHub: https://github.com/asktai/AiLTK
+在线版：https://asktai.github.io/AiLTK/
+==============================================
+            `;
+            
+            const blob = new Blob([result], {type: 'text/plain;charset=utf-8'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = '工资核算记录_' + new Date().toLocaleDateString() + '.txt';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // 打印
+        function printCalc() {
+            window.print();
+        }
+
+        // 显示法律依据
+        function showLegalRef() {
+            document.getElementById('legalModal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('legalModal').classList.remove('active');
+        }
+
+        // 点击模态框外部关闭
+        window.onclick = function(event) {
+            const modal = document.getElementById('legalModal');
+            if(event.target === modal) {
+                modal.classList.remove('active');
+            }
+        }
+    </script>
+</body>
+</html>
