@@ -1,0 +1,1059 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>劳动争议赔偿金计算器 V1.0.1 | HR/劳动者/律师专用</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#165DFF',
+                        secondary: '#14C9C9',
+                        warning: '#F7BA1E',
+                        danger: '#F53F3F',
+                        success: '#00B42A',
+                        info: '#86909C',
+                        bg: '#F2F3F5',
+                        card: '#FFFFFF'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'Noto Sans SC', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #F2F3F5; font-family: 'Inter', 'Noto Sans SC', sans-serif; }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(22, 93, 255, 0.1);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        }
+        .input-focus:focus {
+            border-color: #165DFF;
+            box-shadow: 0 0 0 3px rgba(22, 93, 255, 0.1);
+        }
+        .gradient-text {
+            background: linear-gradient(135deg, #165DFF 0%, #14C9C9 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .scenario-card {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .scenario-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(22, 93, 255, 0.15);
+        }
+        .scenario-card.active {
+            border-color: #165DFF;
+            background: linear-gradient(135deg, rgba(22, 93, 255, 0.05) 0%, rgba(20, 201, 201, 0.05) 100%);
+        }
+        .calculation-row:hover {
+            background-color: rgba(22, 93, 255, 0.02);
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
+        .tab-active {
+            border-bottom: 2px solid #165DFF;
+            color: #165DFF;
+            font-weight: 600;
+        }
+        .tab-inactive {
+            border-bottom: 2px solid transparent;
+            color: #86909C;
+        }
+    </style>
+</head>
+<body class="text-gray-800 antialiased">
+
+    <!-- Header -->
+    <header class="bg-white border-b border-gray-200 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 bg-gradient-to-br from-primary to-secondary rounded-lg flex items-center justify-center text-white font-bold text-lg shadow-lg">
+                    劳
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold text-gray-900 tracking-tight">劳动争议赔偿金计算器</h1>
+                    <p class="text-xs text-gray-500">HR/劳动者/律师专用 V1.0.1</p>
+                </div>
+            </div>
+            <div class="flex items-center space-x-3">
+                <button onclick="resetAll()" class="px-4 py-2 text-sm text-gray-600 hover:text-primary transition-colors flex items-center space-x-1 rounded-lg hover:bg-gray-100">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                    <span>重置</span>
+                </button>
+                <button onclick="exportReport()" class="px-4 py-2 bg-primary text-white text-sm rounded-lg hover:bg-blue-700 transition-all shadow-md hover:shadow-lg flex items-center space-x-1">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                    <span>导出报告</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        
+        <!-- Scenario Selection -->
+        <div class="mb-6">
+            <h2 class="text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wider">选择计算场景</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div onclick="selectScenario('economic')" id="scenario-economic" class="scenario-card glass-card rounded-xl p-5 border-2 border-transparent">
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center text-primary font-bold">N</span>
+                        <span class="text-xs text-gray-400">经济补偿金</span>
+                    </div>
+                    <h3 class="font-semibold text-gray-900 mb-1">合法解除补偿</h3>
+                    <p class="text-xs text-gray-500">协商解除、合同到期、经济性裁员等</p>
+                </div>
+                
+                <div onclick="selectScenario('legal')" id="scenario-legal" class="scenario-card glass-card rounded-xl p-5 border-2 border-transparent">
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="w-10 h-10 bg-success/10 rounded-lg flex items-center justify-center text-success font-bold">N+1</span>
+                        <span class="text-xs text-gray-400">合法辞退</span>
+                    </div>
+                    <h3 class="font-semibold text-gray-900 mb-1">无过失性辞退</h3>
+                    <p class="text-xs text-gray-500">医疗期满不能工作、不胜任工作、客观情况变化</p>
+                </div>
+                
+                <div onclick="selectScenario('illegal')" id="scenario-illegal" class="scenario-card glass-card rounded-xl p-5 border-2 border-transparent">
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="w-10 h-10 bg-danger/10 rounded-lg flex items-center justify-center text-danger font-bold">2N</span>
+                        <span class="text-xs text-gray-400">违法辞退</span>
+                    </div>
+                    <h3 class="font-semibold text-gray-900 mb-1">违法解除赔偿</h3>
+                    <p class="text-xs text-gray-500">无理由辞退、孕期/产期/哺乳期辞退等</p>
+                </div>
+                
+                <div onclick="selectScenario('double')" id="scenario-double" class="scenario-card glass-card rounded-xl p-5 border-2 border-transparent">
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="w-10 h-10 bg-warning/10 rounded-lg flex items-center justify-center text-warning font-bold">2倍</span>
+                        <span class="text-xs text-gray-400">未签合同</span>
+                    </div>
+                    <h3 class="font-semibold text-gray-900 mb-1">双倍工资差额</h3>
+                    <p class="text-xs text-gray-500">超过1个月未签书面劳动合同</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Secondary Tabs -->
+        <div class="bg-white rounded-xl shadow-sm mb-6 p-1">
+            <div class="flex space-x-1">
+                <button onclick="switchTab('compensation')" id="tab-compensation" class="flex-1 py-3 px-4 rounded-lg text-sm font-medium transition-all tab-active">
+                    解除/终止赔偿
+                </button>
+                <button onclick="switchTab('overtime')" id="tab-overtime" class="flex-1 py-3 px-4 rounded-lg text-sm font-medium transition-all tab-inactive">
+                    加班费计算
+                </button>
+                <button onclick="switchTab('other')" id="tab-other" class="flex-1 py-3 px-4 rounded-lg text-sm font-medium transition-all tab-inactive">
+                    其他赔偿
+                </button>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            
+            <!-- Left Panel: Input Settings -->
+            <div class="lg:col-span-4 space-y-6">
+                
+                <!-- Basic Info -->
+                <div class="glass-card rounded-xl p-6">
+                    <h2 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                        <span class="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center mr-2 text-primary">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                        </span>
+                        基本信息
+                    </h2>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">月平均工资（元）<span class="text-danger">*</span></label>
+                            <div class="relative">
+                                <input type="number" id="monthlySalary" placeholder="离职前12个月平均工资" 
+                                    class="w-full px-4 py-2.5 border border-gray-300 rounded-lg input-focus outline-none transition-all text-sm"
+                                    oninput="calculateAll()">
+                                <span class="absolute right-3 top-2.5 text-gray-400 text-sm">元</span>
+                            </div>
+                            <p class="text-xs text-gray-500 mt-1">包括奖金、津贴、补贴等货币性收入</p>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">本单位工作年限（年）<span class="text-danger">*</span></label>
+                            <div class="relative">
+                                <input type="number" id="workYears" placeholder="0.5" step="0.5" min="0"
+                                    class="w-full px-4 py-2.5 border border-gray-300 rounded-lg input-focus outline-none transition-all text-sm"
+                                    oninput="calculateAll()">
+                                <span class="absolute right-3 top-2.5 text-gray-400 text-sm">年</span>
+                            </div>
+                            <p class="text-xs text-gray-500 mt-1">不满6个月按0.5年，满6个月不满1年按1年</p>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">当地社平工资三倍（元）</label>
+                            <div class="relative">
+                                <input type="number" id="tripleAvgSalary" placeholder="自动计算或手动输入" 
+                                    class="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg text-sm text-gray-600"
+                                    oninput="calculateAll()">
+                                <span class="absolute right-3 top-2.5 text-gray-400 text-sm">元</span>
+                            </div>
+                            <p class="text-xs text-gray-500 mt-1">用于高薪员工补偿上限计算（可选）</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Specific Scenarios Inputs -->
+                <div id="specific-inputs" class="space-y-6">
+                    
+                    <!-- Legal Dismissal Specific -->
+                    <div id="legal-specific" class="glass-card rounded-xl p-6 hidden">
+                        <h2 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                            <span class="w-8 h-8 bg-success/10 rounded-lg flex items-center justify-center mr-2 text-success">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            </span>
+                            N+1 专项设置
+                        </h2>
+                        <div class="space-y-3">
+                            <label class="flex items-center space-x-3 p-3 border-2 border-primary bg-primary/5 rounded-lg cursor-pointer transition-colors">
+                                <input type="checkbox" id="noticePaymentCheck" checked onchange="calculateAll()" class="w-4 h-4 text-primary rounded focus:ring-primary">
+                                <div>
+                                    <p class="text-sm font-medium text-gray-900">未提前30日书面通知（+1）</p>
+                                    <p class="text-xs text-gray-500">用人单位未提前30日书面通知，需支付代通知金</p>
+                                </div>
+                            </label>
+                            <div class="bg-green-50 rounded-lg p-3 border border-green-100">
+                                <p class="text-xs text-green-700">
+                                    <span class="font-bold">代通知金标准：</span>上1个月的工资（按解除劳动合同前12个月平均工资计算）
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Double Salary Specific -->
+                    <div id="double-specific" class="glass-card rounded-xl p-6 hidden">
+                        <h2 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                            <span class="w-8 h-8 bg-warning/10 rounded-lg flex items-center justify-center mr-2 text-warning">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                            </span>
+                            双倍工资专项
+                        </h2>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">入职日期</label>
+                                <input type="date" id="entryDate" onchange="calculateAll()"
+                                    class="w-full px-4 py-2.5 border border-gray-300 rounded-lg input-focus outline-none transition-all text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">合同签订日期</label>
+                                <input type="date" id="contractDate" onchange="calculateAll()"
+                                    class="w-full px-4 py-2.5 border border-gray-300 rounded-lg input-focus outline-none transition-all text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">离职日期（如已离职）</label>
+                                <input type="date" id="leaveDate" onchange="calculateAll()"
+                                    class="w-full px-4 py-2.5 border border-gray-300 rounded-lg input-focus outline-none transition-all text-sm">
+                            </div>
+                            <div class="bg-yellow-50 rounded-lg p-3 border border-yellow-100">
+                                <p class="text-xs text-yellow-700">
+                                    <span class="font-bold">计算规则：</span>用工之日起超过1个月不满1年未签合同的，每月支付2倍工资，最多11个月。
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Overtime Specific -->
+                    <div id="overtime-specific" class="glass-card rounded-xl p-6 hidden">
+                        <h2 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                            <span class="w-8 h-8 bg-secondary/10 rounded-lg flex items-center justify-center mr-2 text-secondary">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            </span>
+                            加班费计算
+                        </h2>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">日工资或小时工资基数（元）</label>
+                                <div class="relative">
+                                    <input type="number" id="dailySalary" placeholder="月工资 ÷ 21.75天" 
+                                        class="w-full px-4 py-2.5 border border-gray-300 rounded-lg input-focus outline-none transition-all text-sm"
+                                        oninput="calculateAll()">
+                                    <span class="absolute right-3 top-2.5 text-gray-400 text-sm">元</span>
+                                </div>
+                                <p class="text-xs text-gray-500 mt-1">默认按月工资÷21.75天计算</p>
+                            </div>
+                            
+                            <div class="grid grid-cols-3 gap-3">
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-600 mb-1">工作日加班</label>
+                                    <input type="number" id="weekdayHours" placeholder="小时" step="0.5"
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm input-focus"
+                                        oninput="calculateAll()">
+                                    <p class="text-xs text-gray-400 mt-1">1.5倍</p>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-600 mb-1">周末加班</label>
+                                    <input type="number" id="weekendHours" placeholder="小时" step="0.5"
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm input-focus"
+                                        oninput="calculateAll()">
+                                    <p class="text-xs text-gray-400 mt-1">2倍</p>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-600 mb-1">法定节假日</label>
+                                    <input type="number" id="holidayHours" placeholder="小时" step="0.5"
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm input-focus"
+                                        oninput="calculateAll()">
+                                    <p class="text-xs text-gray-400 mt-1">3倍</p>
+                                </div>
+                            </div>
+
+                            <div class="bg-blue-50 rounded-lg p-3 border border-blue-100">
+                                <p class="text-xs text-blue-700">
+                                    <span class="font-bold">计算公式：</span><br>
+                                    工作日：小时工资 × 1.5 × 小时数<br>
+                                    周末：小时工资 × 2 × 小时数<br>
+                                    节假日：小时工资 × 3 × 小时数
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Other Claims -->
+                <div id="other-claims" class="glass-card rounded-xl p-6 hidden">
+                    <h2 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                        <span class="w-8 h-8 bg-info/10 rounded-lg flex items-center justify-center mr-2 text-info">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
+                        </span>
+                        其他赔偿项目
+                    </h2>
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between">
+                            <label class="text-sm text-gray-700">未休年假工资（3倍）</label>
+                            <input type="number" id="annualLeaveDays" placeholder="天数" 
+                                class="w-24 px-3 py-1.5 border border-gray-300 rounded text-sm text-right input-focus"
+                                oninput="calculateAll()">
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <label class="text-sm text-gray-700">违法约定试用期赔偿</label>
+                            <input type="number" id="illegalProbation" placeholder="月数" 
+                                class="w-24 px-3 py-1.5 border border-gray-300 rounded text-sm text-right input-focus"
+                                oninput="calculateAll()">
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <label class="text-sm text-gray-700">未及时支付工资赔偿金（50-100%）</label>
+                            <input type="number" id="delayedWages" placeholder="金额" 
+                                class="w-24 px-3 py-1.5 border border-gray-300 rounded text-sm text-right input-focus"
+                                oninput="calculateAll()">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Panel: Results -->
+            <div class="lg:col-span-8 space-y-6">
+                
+                <!-- Summary Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="glass-card rounded-xl p-6 border-l-4 border-primary">
+                        <p class="text-sm text-gray-500 mb-1">经济补偿金（N）</p>
+                        <p class="text-2xl font-bold text-gray-900" id="economicCompensation">¥0.00</p>
+                        <p class="text-xs text-gray-400 mt-1" id="economicDesc">按工作年限计算</p>
+                    </div>
+                    <div class="glass-card rounded-xl p-6 border-l-4 border-success">
+                        <p class="text-sm text-gray-500 mb-1">代通知金（+1）</p>
+                        <p class="text-2xl font-bold text-gray-900" id="noticePaymentDisplay">¥0.00</p>
+                        <p class="text-xs text-gray-400 mt-1">未提前30日通知</p>
+                    </div>
+                    <div class="glass-card rounded-xl p-6 border-l-4 border-danger">
+                        <p class="text-sm text-gray-500 mb-1">赔偿金总额</p>
+                        <p class="text-2xl font-bold text-gray-900" id="totalCompensation">¥0.00</p>
+                        <p class="text-xs text-gray-400 mt-1" id="totalCompensationDesc">根据场景自动计算</p>
+                    </div>
+                </div>
+
+                <!-- Detailed Calculation -->
+                <div class="glass-card rounded-xl shadow-sm overflow-hidden">
+                    <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-gradient-to-r from-primary/5 to-transparent">
+                        <h3 class="font-semibold text-gray-900 flex items-center">
+                            <svg class="w-5 h-5 mr-2 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+                            计算明细
+                        </h3>
+                        <span id="calculationStatus" class="text-xs px-3 py-1 rounded-full bg-gray-100 text-gray-500">等待输入</span>
+                    </div>
+                    
+                    <div class="p-6">
+                        
+                        <!-- Work Years Calculation -->
+                        <div class="mb-6">
+                            <h4 class="text-sm font-semibold text-gray-900 mb-3 pb-2 border-b border-gray-100 flex items-center">
+                                <span class="w-2 h-2 bg-primary rounded-full mr-2"></span>
+                                工作年限与补偿基数
+                            </h4>
+                            <div class="bg-gray-50 rounded-lg p-4 space-y-3">
+                                <div class="flex justify-between items-center text-sm">
+                                    <span class="text-gray-600">实际工作年限</span>
+                                    <span class="text-gray-900 font-medium" id="actualYears">-</span>
+                                </div>
+                                <div class="flex justify-between items-center text-sm">
+                                    <span class="text-gray-600">计算用工作年限（N）</span>
+                                    <span class="text-gray-900 font-medium" id="calculatedYears">-</span>
+                                </div>
+                                <div class="flex justify-between items-center text-sm">
+                                    <span class="text-gray-600">月平均工资</span>
+                                    <span class="text-gray-900 font-medium" id="avgSalaryDisplay">-</span>
+                                </div>
+                                <div class="flex justify-between items-center text-sm" id="salaryCapRow" style="display: none;">
+                                    <span class="text-gray-600">社平工资三倍上限</span>
+                                    <span class="text-warning font-medium" id="salaryCapDisplay">-</span>
+                                </div>
+                                <div class="flex justify-between items-center text-sm">
+                                    <span class="text-gray-600">实际计算基数</span>
+                                    <span class="text-primary font-semibold" id="finalBaseDisplay">-</span>
+                                </div>
+                                <div class="border-t border-gray-200 pt-2 mt-2">
+                                    <div class="flex justify-between items-center text-sm">
+                                        <span class="text-gray-600">经济补偿金（N）= 基数 × 年限</span>
+                                        <span class="text-primary font-mono" id="economicFormula">-</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Scenario Specific Details -->
+                        <div class="mb-6" id="scenario-details">
+                            <h4 class="text-sm font-semibold text-gray-900 mb-3 pb-2 border-b border-gray-100 flex items-center">
+                                <span class="w-2 h-2 bg-secondary rounded-full mr-2"></span>
+                                <span id="scenarioDetailTitle">场景计算</span>
+                            </h4>
+                            
+                            <!-- Legal Dismissal Details -->
+                            <div id="legal-details" class="hidden">
+                                <div class="bg-green-50 rounded-lg p-4 border border-green-100 space-y-2">
+                                    <div class="flex justify-between items-center text-sm">
+                                        <span class="text-gray-600">经济补偿金（N）</span>
+                                        <span class="text-gray-900 font-medium" id="legalEconomic">¥0.00</span>
+                                    </div>
+                                    <div class="flex justify-between items-center text-sm">
+                                        <span class="text-gray-600">代通知金（+1）</span>
+                                        <span class="text-success font-medium" id="legalNotice">¥0.00</span>
+                                    </div>
+                                    <div class="border-t border-green-200 pt-2 mt-2">
+                                        <div class="flex justify-between items-center text-base font-semibold text-green-900">
+                                            <span>合计（N+1）</span>
+                                            <span id="legalTotal">¥0.00</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mt-3 text-xs text-gray-500 bg-gray-50 p-3 rounded">
+                                    <span class="font-medium">适用情形：</span>《劳动合同法》第40条：劳动者患病或非因工负伤医疗期满不能从事原工作、劳动者不能胜任工作经培训或调岗仍不能胜任、劳动合同订立时所依据的客观情况发生重大变化。
+                                </div>
+                            </div>
+
+                            <!-- Illegal Dismissal Details -->
+                            <div id="illegal-details" class="hidden">
+                                <div class="bg-red-50 rounded-lg p-4 border border-red-100 space-y-2">
+                                    <div class="flex justify-between items-center text-sm">
+                                        <span class="text-gray-600">经济补偿金（N）</span>
+                                        <span class="text-gray-900 font-medium" id="illegalEconomic">¥0.00</span>
+                                    </div>
+                                    <div class="flex justify-between items-center text-sm">
+                                        <span class="text-gray-600">违法解除赔偿金（2N）</span>
+                                        <span class="text-danger font-semibold" id="illegalCompensation">¥0.00</span>
+                                    </div>
+                                    <div class="border-t border-red-200 pt-2 mt-2">
+                                        <div class="flex justify-between items-center text-base font-semibold text-red-900">
+                                            <span>应支付赔偿金（2N）</span>
+                                            <span id="illegalFinal">¥0.00</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mt-3 text-xs text-gray-500 bg-gray-50 p-3 rounded">
+                                    <span class="font-medium">适用情形：</span>《劳动合同法》第87条：用人单位违反本法规定解除或终止劳动合同的，应当依照本法第47条规定的经济补偿标准的二倍向劳动者支付赔偿金。常见情形：无理由辞退、孕期/产期/哺乳期女职工辞退、工伤医疗期内辞退等。
+                                </div>
+                            </div>
+
+                            <!-- Double Salary Details -->
+                            <div id="double-details" class="hidden">
+                                <div class="bg-yellow-50 rounded-lg p-4 border border-yellow-100 space-y-2">
+                                    <div class="flex justify-between items-center text-sm">
+                                        <span class="text-gray-600">未签合同期间</span>
+                                        <span class="text-gray-900 font-medium" id="doublePeriod">-</span>
+                                    </div>
+                                    <div class="flex justify-between items-center text-sm">
+                                        <span class="text-gray-600">应支付双倍工资月数</span>
+                                        <span class="text-gray-900 font-medium" id="doubleMonths">-</span>
+                                    </div>
+                                    <div class="flex justify-between items-center text-sm">
+                                        <span class="text-gray-600">每月双倍工资差额</span>
+                                        <span class="text-gray-900 font-medium" id="doubleMonthly">¥0.00</span>
+                                    </div>
+                                    <div class="border-t border-yellow-200 pt-2 mt-2">
+                                        <div class="flex justify-between items-center text-base font-semibold text-yellow-900">
+                                            <span>双倍工资差额合计</span>
+                                            <span id="doubleTotal">¥0.00</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mt-3 text-xs text-gray-500 bg-gray-50 p-3 rounded">
+                                    <span class="font-medium">法律依据：</span>《劳动合同法》第82条：用人单位自用工之日起超过1个月不满1年未与劳动者订立书面劳动合同的，应当向劳动者每月支付2倍的工资。《劳动合同法实施条例》第6条：起算时间为用工之日起满1个月的次日，截止时间为补订书面劳动合同的前1日，最长11个月。
+                                </div>
+                            </div>
+
+                            <!-- Overtime Details -->
+                            <div id="overtime-details" class="hidden">
+                                <div class="bg-blue-50 rounded-lg p-4 border border-blue-100">
+                                    <table class="w-full text-sm">
+                                        <thead class="bg-blue-100/50 text-blue-900">
+                                            <tr>
+                                                <th class="px-3 py-2 text-left">加班类型</th>
+                                                <th class="px-3 py-2 text-right">小时数</th>
+                                                <th class="px-3 py-2 text-right">计算系数</th>
+                                                <th class="px-3 py-2 text-right">金额</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="divide-y divide-blue-100">
+                                            <tr>
+                                                <td class="px-3 py-2 text-gray-700">工作日延长</td>
+                                                <td class="px-3 py-2 text-right" id="detailWeekdayHours">0</td>
+                                                <td class="px-3 py-2 text-right">1.5倍</td>
+                                                <td class="px-3 py-2 text-right font-medium" id="detailWeekdayAmount">¥0.00</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="px-3 py-2 text-gray-700">休息日加班</td>
+                                                <td class="px-3 py-2 text-right" id="detailWeekendHours">0</td>
+                                                <td class="px-3 py-2 text-right">2倍</td>
+                                                <td class="px-3 py-2 text-right font-medium" id="detailWeekendAmount">¥0.00</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="px-3 py-2 text-gray-700">法定节假日</td>
+                                                <td class="px-3 py-2 text-right" id="detailHolidayHours">0</td>
+                                                <td class="px-3 py-2 text-right">3倍</td>
+                                                <td class="px-3 py-2 text-right font-medium" id="detailHolidayAmount">¥0.00</td>
+                                            </tr>
+                                        </tbody>
+                                        <tfoot class="bg-blue-100/30 font-semibold text-blue-900">
+                                            <tr>
+                                                <td class="px-3 py-2" colspan="3">加班费合计</td>
+                                                <td class="px-3 py-2 text-right" id="detailOvertimeTotal">¥0.00</td>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                                <div class="mt-3 text-xs text-gray-500 bg-gray-50 p-3 rounded">
+                                    <span class="font-medium">法律依据：</span>《劳动法》第44条：安排劳动者延长工作时间的，支付不低于工资的150%的工资报酬；休息日安排劳动者工作又不能安排补休的，支付不低于工资的200%的工资报酬；法定休假日安排劳动者工作的，支付不低于工资的300%的工资报酬。
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Other Claims Summary -->
+                        <div class="mb-6 hidden" id="other-summary">
+                            <h4 class="text-sm font-semibold text-gray-900 mb-3 pb-2 border-b border-gray-100 flex items-center">
+                                <span class="w-2 h-2 bg-info rounded-full mr-2"></span>
+                                其他赔偿项目
+                            </h4>
+                            <div class="bg-gray-50 rounded-lg p-4 space-y-2">
+                                <div class="flex justify-between items-center text-sm">
+                                    <span class="text-gray-600">未休年假工资（3倍，含正常工资）</span>
+                                    <span class="text-gray-900 font-medium" id="otherAnnualLeave">¥0.00</span>
+                                </div>
+                                <div class="flex justify-between items-center text-sm">
+                                    <span class="text-gray-600">违法约定试用期赔偿（满月工资）</span>
+                                    <span class="text-gray-900 font-medium" id="otherProbation">¥0.00</span>
+                                </div>
+                                <div class="flex justify-between items-center text-sm">
+                                    <span class="text-gray-600">未及时支付工资加付赔偿金（50-100%）</span>
+                                    <span class="text-gray-900 font-medium" id="otherDelayed">¥0.00</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Total Summary -->
+                        <div class="bg-gradient-to-r from-primary/5 to-secondary/5 rounded-xl p-6 border border-primary/10">
+                            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4">
+                                <div>
+                                    <h4 class="text-lg font-bold text-gray-900">赔偿汇总</h4>
+                                    <p class="text-sm text-gray-500 mt-1">基于《劳动合同法》《劳动法》计算</p>
+                                </div>
+                                <div class="mt-4 md:mt-0 text-right">
+                                    <p class="text-sm text-gray-500">应支付总额</p>
+                                    <p class="text-3xl font-bold gradient-text" id="finalTotalAmount">¥0.00</p>
+                                </div>
+                            </div>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                                <div class="bg-white rounded-lg p-3 shadow-sm">
+                                    <p class="text-gray-500 mb-1">经济补偿/赔偿金</p>
+                                    <p class="font-semibold text-primary" id="summaryMain">¥0.00</p>
+                                </div>
+                                <div class="bg-white rounded-lg p-3 shadow-sm">
+                                    <p class="text-gray-500 mb-1">代通知金/双倍工资</p>
+                                    <p class="font-semibold text-success" id="summarySecondary">¥0.00</p>
+                                </div>
+                                <div class="bg-white rounded-lg p-3 shadow-sm">
+                                    <p class="text-gray-500 mb-1">加班费</p>
+                                    <p class="font-semibold text-warning" id="summaryOvertime">¥0.00</p>
+                                </div>
+                                <div class="bg-white rounded-lg p-3 shadow-sm">
+                                    <p class="text-gray-500 mb-1">其他赔偿</p>
+                                    <p class="font-semibold text-info" id="summaryOther">¥0.00</p>
+                                </div>
+                            </div>
+
+                            <div class="mt-4 p-4 bg-white rounded-lg border border-gray-200">
+                                <h5 class="font-semibold text-gray-900 mb-3 flex items-center">
+                                    <svg class="w-4 h-4 mr-2 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    仲裁/诉讼提示
+                                </h5>
+                                <ul class="space-y-2 text-xs text-gray-600">
+                                    <li class="flex items-start">
+                                        <span class="w-1.5 h-1.5 bg-primary rounded-full mr-2 mt-1.5 flex-shrink-0"></span>
+                                        <span>劳动争议申请仲裁的时效期间为<span class="font-semibold text-gray-900">1年</span>，从当事人知道或应当知道其权利被侵害之日起计算</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <span class="w-1.5 h-1.5 bg-primary rounded-full mr-2 mt-1.5 flex-shrink-0"></span>
+                                        <span>对仲裁裁决不服的，可以自收到仲裁裁决书之日起<span class="font-semibold text-gray-900">15日内</span>向人民法院提起诉讼</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <span class="w-1.5 h-1.5 bg-primary rounded-full mr-2 mt-1.5 flex-shrink-0"></span>
+                                        <span>经济补偿金月工资标准高于当地社平工资3倍的，按3倍计算且年限最高不超过<span class="font-semibold text-gray-900">12年</span></span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Legal Basis -->
+                <div class="glass-card rounded-xl p-6">
+                    <h3 class="font-semibold text-gray-900 mb-4 flex items-center">
+                        <svg class="w-5 h-5 mr-2 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+                        法律依据速查
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-gray-600">
+                        <div class="space-y-2">
+                            <p class="font-semibold text-gray-900">经济补偿金（N）</p>
+                            <p>《劳动合同法》第47条：按劳动者在本单位工作的年限，每满1年支付1个月工资。6个月以上不满1年的，按1年计算；不满6个月的，向劳动者支付半个月工资。</p>
+                        </div>
+                        <div class="space-y-2">
+                            <p class="font-semibold text-gray-900">违法解除赔偿金（2N）</p>
+                            <p>《劳动合同法》第87条：用人单位违反本法规定解除或终止劳动合同的，应当依照本法第47条规定的经济补偿标准的<span class="text-danger font-bold">二倍</span>向劳动者支付赔偿金。</p>
+                        </div>
+                        <div class="space-y-2">
+                            <p class="font-semibold text-gray-900">代通知金（+1）</p>
+                            <p>《劳动合同法》第40条：有下列情形之一的，用人单位提前30日以书面形式通知劳动者本人或额外支付劳动者<span class="text-success font-bold">1个月工资</span>后，可以解除劳动合同。</p>
+                        </div>
+                        <div class="space-y-2">
+                            <p class="font-semibold text-gray-900">双倍工资</p>
+                            <p>《劳动合同法》第82条：用人单位自用工之日起超过1个月不满1年未与劳动者订立书面劳动合同的，应当向劳动者每月支付<span class="text-warning font-bold">2倍的工资</span>。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let currentScenario = 'economic';
+        let currentTab = 'compensation';
+
+        function selectScenario(scenario) {
+            currentScenario = scenario;
+            
+            // Update UI
+            document.querySelectorAll('.scenario-card').forEach(card => {
+                card.classList.remove('active');
+            });
+            document.getElementById(`scenario-${scenario}`).classList.add('active');
+            
+            // Show specific inputs
+            document.getElementById('legal-specific').classList.add('hidden');
+            document.getElementById('double-specific').classList.add('hidden');
+            document.getElementById('overtime-specific').classList.add('hidden');
+            document.getElementById('other-claims').classList.add('hidden');
+            
+            if (scenario === 'legal') {
+                document.getElementById('legal-specific').classList.remove('hidden');
+            } else if (scenario === 'double') {
+                document.getElementById('double-specific').classList.remove('hidden');
+            }
+            
+            // Switch to compensation tab if needed
+            if (currentTab !== 'compensation' && scenario !== 'overtime') {
+                switchTab('compensation');
+            }
+            
+            calculateAll();
+        }
+
+        function switchTab(tab) {
+            currentTab = tab;
+            
+            // Update tabs
+            document.getElementById('tab-compensation').className = tab === 'compensation' ? 
+                'flex-1 py-3 px-4 rounded-lg text-sm font-medium transition-all tab-active' : 
+                'flex-1 py-3 px-4 rounded-lg text-sm font-medium transition-all tab-inactive';
+            document.getElementById('tab-overtime').className = tab === 'overtime' ? 
+                'flex-1 py-3 px-4 rounded-lg text-sm font-medium transition-all tab-active' : 
+                'flex-1 py-3 px-4 rounded-lg text-sm font-medium transition-all tab-inactive';
+            document.getElementById('tab-other').className = tab === 'other' ? 
+                'flex-1 py-3 px-4 rounded-lg text-sm font-medium transition-all tab-active' : 
+                'flex-1 py-3 px-4 rounded-lg text-sm font-medium transition-all tab-inactive';
+            
+            // Show specific inputs
+            document.getElementById('legal-specific').classList.add('hidden');
+            document.getElementById('double-specific').classList.add('hidden');
+            document.getElementById('overtime-specific').classList.add('hidden');
+            document.getElementById('other-claims').classList.add('hidden');
+            
+            if (tab === 'overtime') {
+                document.getElementById('overtime-specific').classList.remove('hidden');
+                currentScenario = 'overtime';
+            } else if (tab === 'other') {
+                document.getElementById('other-claims').classList.remove('hidden');
+            } else {
+                // compensation tab
+                if (currentScenario === 'legal') {
+                    document.getElementById('legal-specific').classList.remove('hidden');
+                } else if (currentScenario === 'double') {
+                    document.getElementById('double-specific').classList.remove('hidden');
+                }
+            }
+            
+            calculateAll();
+        }
+
+        function calculateAll() {
+            const monthlySalary = parseFloat(document.getElementById('monthlySalary').value) || 0;
+            const workYears = parseFloat(document.getElementById('workYears').value) || 0;
+            const tripleAvgSalary = parseFloat(document.getElementById('tripleAvgSalary').value) || 0;
+            
+            // Validation
+            const isValid = monthlySalary > 0 && workYears >= 0;
+            const statusEl = document.getElementById('calculationStatus');
+            
+            if (isValid) {
+                statusEl.textContent = '计算完成';
+                statusEl.className = 'text-xs px-3 py-1 rounded-full bg-success/10 text-success';
+            } else {
+                statusEl.textContent = '等待输入（月工资、工作年限）';
+                statusEl.className = 'text-xs px-3 py-1 rounded-full bg-gray-100 text-gray-500';
+            }
+            
+            // Calculate work years for display
+            let calculatedYears = Math.floor(workYears);
+            let remainder = workYears - calculatedYears;
+            
+            if (remainder >= 0.5 && remainder < 1) {
+                calculatedYears += 1;
+            } else if (remainder > 0 && remainder < 0.5) {
+                calculatedYears += 0.5;
+            }
+            
+            // High salary cap logic
+            let actualBase = monthlySalary;
+            let isCapped = false;
+            if (tripleAvgSalary > 0 && monthlySalary > tripleAvgSalary) {
+                actualBase = tripleAvgSalary;
+                isCapped = true;
+            }
+            
+            // Update basic displays
+            document.getElementById('actualYears').textContent = workYears + '年';
+            document.getElementById('calculatedYears').textContent = calculatedYears + '年（N=' + calculatedYears + '）';
+            document.getElementById('avgSalaryDisplay').textContent = '¥' + monthlySalary.toLocaleString();
+            
+            if (isCapped) {
+                document.getElementById('salaryCapRow').style.display = 'flex';
+                document.getElementById('salaryCapDisplay').textContent = '¥' + tripleAvgSalary.toLocaleString();
+                document.getElementById('finalBaseDisplay').textContent = '¥' + actualBase.toLocaleString() + '（已封顶）';
+            } else {
+                document.getElementById('salaryCapRow').style.display = 'none';
+                document.getElementById('finalBaseDisplay').textContent = '¥' + actualBase.toLocaleString();
+            }
+            
+            // Calculate Economic Compensation (N)
+            let economicComp = actualBase * calculatedYears;
+            // Cap years at 12 if salary is capped
+            if (isCapped && calculatedYears > 12) {
+                economicComp = actualBase * 12;
+                document.getElementById('economicDesc').textContent = '高薪员工，按12年上限计算';
+            } else {
+                document.getElementById('economicDesc').textContent = '按工作年限计算';
+            }
+            
+            document.getElementById('economicCompensation').textContent = formatMoney(economicComp);
+            document.getElementById('economicFormula').textContent = `${actualBase.toLocaleString()} × ${isCapped && calculatedYears > 12 ? 12 : calculatedYears} = ${economicComp.toLocaleString()}`;
+            
+            // Scenario specific calculations
+            let totalAmount = economicComp;
+            let noticeAmount = 0; // 代通知金
+            let secondaryAmount = 0;
+            let overtimeAmount = 0;
+            let otherAmount = 0;
+            
+            // Hide all detail sections first
+            document.getElementById('legal-details').classList.add('hidden');
+            document.getElementById('illegal-details').classList.add('hidden');
+            document.getElementById('double-details').classList.add('hidden');
+            document.getElementById('overtime-details').classList.add('hidden');
+            document.getElementById('other-summary').classList.add('hidden');
+            
+            if (currentScenario === 'economic' || (currentTab === 'compensation' && currentScenario === 'economic')) {
+                document.getElementById('scenarioDetailTitle').textContent = '经济补偿金（N）计算';
+                document.getElementById('totalCompensationDesc').textContent = '合法解除/终止劳动合同';
+                totalAmount = economicComp;
+                
+                // 重置代通知金显示
+                document.getElementById('noticePaymentDisplay').textContent = '¥0.00';
+                
+            } else if (currentScenario === 'legal') {
+                document.getElementById('scenarioDetailTitle').textContent = '合法辞退（N+1）计算';
+                document.getElementById('legal-details').classList.remove('hidden');
+                
+                // 修复：正确获取checkbox状态
+                const hasNotice = document.getElementById('noticePaymentCheck').checked;
+                noticeAmount = hasNotice ? actualBase : 0;
+                
+                // 更新代通知金显示 - 修复：确保显示在顶部卡片
+                document.getElementById('noticePaymentDisplay').textContent = formatMoney(noticeAmount);
+                
+                document.getElementById('legalEconomic').textContent = formatMoney(economicComp);
+                document.getElementById('legalNotice').textContent = formatMoney(noticeAmount);
+                document.getElementById('legalTotal').textContent = formatMoney(economicComp + noticeAmount);
+                
+                document.getElementById('totalCompensationDesc').textContent = hasNotice ? 'N+1（经济补偿+代通知金）' : '仅N（已提前30日通知）';
+                totalAmount = economicComp + noticeAmount;
+                secondaryAmount = noticeAmount;
+                
+            } else if (currentScenario === 'illegal') {
+                document.getElementById('scenarioDetailTitle').textContent = '违法辞退（2N）计算';
+                document.getElementById('illegal-details').classList.remove('hidden');
+                
+                const illegalComp = economicComp * 2;
+                
+                document.getElementById('illegalEconomic').textContent = formatMoney(economicComp);
+                document.getElementById('illegalCompensation').textContent = formatMoney(illegalComp);
+                document.getElementById('illegalFinal').textContent = formatMoney(illegalComp);
+                
+                document.getElementById('totalCompensationDesc').textContent = '违法解除赔偿金（2倍经济补偿）';
+                totalAmount = illegalComp;
+                
+                // 重置代通知金显示
+                document.getElementById('noticePaymentDisplay').textContent = '¥0.00';
+                
+            } else if (currentScenario === 'double') {
+                document.getElementById('scenarioDetailTitle').textContent = '未签劳动合同双倍工资计算';
+                document.getElementById('double-details').classList.remove('hidden');
+                
+                // Calculate double salary period
+                const entryDate = document.getElementById('entryDate').value;
+                const contractDate = document.getElementById('contractDate').value;
+                const leaveDate = document.getElementById('leaveDate').value;
+                
+                let doubleMonths = 0;
+                let periodDesc = '-';
+                
+                if (entryDate) {
+                    const entry = new Date(entryDate);
+                    const endDate = leaveDate ? new Date(leaveDate) : (contractDate ? new Date(contractDate) : new Date());
+                    const oneMonthAfter = new Date(entry);
+                    oneMonthAfter.setMonth(oneMonthAfter.getMonth() + 1);
+                    
+                    if (endDate > oneMonthAfter) {
+                        const diffTime = Math.abs(endDate - oneMonthAfter);
+                        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                        doubleMonths = Math.min(11, Math.floor(diffDays / 30));
+                        
+                        if (doubleMonths > 0) {
+                            periodDesc = `${entryDate} 至 ${contractDate || leaveDate || '至今'}`;
+                        }
+                    }
+                }
+                
+                const doubleTotal = monthlySalary * doubleMonths;
+                
+                document.getElementById('doublePeriod').textContent = periodDesc;
+                document.getElementById('doubleMonths').textContent = doubleMonths + '个月（最长11个月）';
+                document.getElementById('doubleMonthly').textContent = formatMoney(monthlySalary);
+                document.getElementById('doubleTotal').textContent = formatMoney(doubleTotal);
+                
+                document.getElementById('totalCompensationDesc').textContent = '未签劳动合同双倍工资差额';
+                totalAmount = doubleTotal;
+                secondaryAmount = doubleTotal;
+                
+                // 重置代通知金显示
+                document.getElementById('noticePaymentDisplay').textContent = '¥0.00';
+            }
+            
+            // Overtime calculation
+            if (currentTab === 'overtime' || currentScenario === 'overtime') {
+                document.getElementById('scenarioDetailTitle').textContent = '加班费计算';
+                document.getElementById('overtime-details').classList.remove('hidden');
+                
+                const dailySalary = parseFloat(document.getElementById('dailySalary').value) || (monthlySalary / 21.75);
+                const hourSalary = dailySalary / 8;
+                
+                const weekdayHours = parseFloat(document.getElementById('weekdayHours').value) || 0;
+                const weekendHours = parseFloat(document.getElementById('weekendHours').value) || 0;
+                const holidayHours = parseFloat(document.getElementById('holidayHours').value) || 0;
+                
+                const weekdayAmount = hourSalary * 1.5 * weekdayHours;
+                const weekendAmount = hourSalary * 2 * weekendHours;
+                const holidayAmount = hourSalary * 3 * holidayHours;
+                
+                overtimeAmount = weekdayAmount + weekendAmount + holidayAmount;
+                
+                document.getElementById('detailWeekdayHours').textContent = weekdayHours;
+                document.getElementById('detailWeekdayAmount').textContent = formatMoney(weekdayAmount);
+                document.getElementById('detailWeekendHours').textContent = weekendHours;
+                document.getElementById('detailWeekendAmount').textContent = formatMoney(weekendAmount);
+                document.getElementById('detailHolidayHours').textContent = holidayHours;
+                document.getElementById('detailHolidayAmount').textContent = formatMoney(holidayAmount);
+                document.getElementById('detailOvertimeTotal').textContent = formatMoney(overtimeAmount);
+                
+                document.getElementById('totalCompensationDesc').textContent = '加班费合计';
+                totalAmount = overtimeAmount;
+                
+                // 重置代通知金显示
+                document.getElementById('noticePaymentDisplay').textContent = '¥0.00';
+            }
+            
+            // Other claims
+            if (currentTab === 'other') {
+                document.getElementById('other-summary').classList.remove('hidden');
+                
+                const annualDays = parseFloat(document.getElementById('annualLeaveDays').value) || 0;
+                const illegalProbationMonths = parseFloat(document.getElementById('illegalProbation').value) || 0;
+                const delayedWages = parseFloat(document.getElementById('delayedWages').value) || 0;
+                
+                const annualAmount = monthlySalary / 21.75 * annualDays * 2; // 3倍含正常工资，这里算额外2倍
+                const probationAmount = monthlySalary * illegalProbationMonths;
+                const delayedAmount = delayedWages * 0.5; // 最低50%
+                
+                otherAmount = annualAmount + probationAmount + delayedAmount;
+                
+                document.getElementById('otherAnnualLeave').textContent = formatMoney(annualAmount);
+                document.getElementById('otherProbation').textContent = formatMoney(probationAmount);
+                document.getElementById('otherDelayed').textContent = formatMoney(delayedAmount);
+                
+                totalAmount = otherAmount;
+                
+                // 重置代通知金显示
+                document.getElementById('noticePaymentDisplay').textContent = '¥0.00';
+            }
+            
+            // Update summary cards
+            document.getElementById('totalCompensation').textContent = formatMoney(totalAmount);
+            document.getElementById('finalTotalAmount').textContent = formatMoney(totalAmount);
+            
+            // Update summary section
+            document.getElementById('summaryMain').textContent = formatMoney(economicComp);
+            document.getElementById('summarySecondary').textContent = formatMoney(secondaryAmount);
+            document.getElementById('summaryOvertime').textContent = formatMoney(overtimeAmount);
+            document.getElementById('summaryOther').textContent = formatMoney(otherAmount);
+        }
+
+        function formatMoney(amount) {
+            return '¥' + amount.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+
+        function resetAll() {
+            // Reset inputs
+            document.getElementById('monthlySalary').value = '';
+            document.getElementById('workYears').value = '';
+            document.getElementById('tripleAvgSalary').value = '';
+            document.getElementById('dailySalary').value = '';
+            document.getElementById('weekdayHours').value = '';
+            document.getElementById('weekendHours').value = '';
+            document.getElementById('holidayHours').value = '';
+            document.getElementById('annualLeaveDays').value = '';
+            document.getElementById('illegalProbation').value = '';
+            document.getElementById('delayedWages').value = '';
+            
+            // Reset dates
+            document.getElementById('entryDate').value = '';
+            document.getElementById('contractDate').value = '';
+            document.getElementById('leaveDate').value = '';
+            
+            // Reset checkbox
+            document.getElementById('noticePaymentCheck').checked = true;
+            
+            // Reset scenario
+            selectScenario('economic');
+            
+            calculateAll();
+        }
+
+        function exportReport() {
+            const total = document.getElementById('finalTotalAmount').textContent;
+            if (total === '¥0.00') {
+                alert('请先完成计算再导出报告');
+                return;
+            }
+            
+            const scenarioNames = {
+                'economic': '经济补偿金（N）',
+                'legal': '合法辞退（N+1）',
+                'illegal': '违法辞退（2N）',
+                'double': '未签合同双倍工资',
+                'overtime': '加班费'
+            };
+            
+            let report = `劳动争议赔偿计算报告\n`;
+            report += `================\n\n`;
+            report += `生成时间：${new Date().toLocaleString('zh-CN')}\n`;
+            report += `计算场景：${scenarioNames[currentScenario] || '综合计算'}\n`;
+            report += `月工资标准：${document.getElementById('monthlySalary').value || 0}元\n`;
+            report += `工作年限：${document.getElementById('workYears').value || 0}年\n\n`;
+            
+            report += `【计算结果】\n`;
+            report += `经济补偿金（N）：${document.getElementById('economicCompensation').textContent}\n`;
+            report += `代通知金（+1）：${document.getElementById('noticePaymentDisplay').textContent}\n`;
+            report += `赔偿总额：${total}\n\n`;
+            
+            report += `【法律依据】\n`;
+            report += `《中华人民共和国劳动合同法》\n`;
+            report += `《中华人民共和国劳动法》\n`;
+            report += `《劳动合同法实施条例》\n\n`;
+            
+            report += `【重要提示】\n`;
+            report += `1. 劳动争议申请仲裁的时效期间为1年\n`;
+            report += `2. 对仲裁裁决不服的，可在15日内向法院起诉\n`;
+            report += `3. 本计算结果仅供参考，具体以劳动仲裁委或法院裁决为准\n`;
+            
+            const blob = new Blob([report], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `劳动争议赔偿报告_${new Date().toISOString().slice(0,10)}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            selectScenario('economic');
+        });
+    </script>
+</body>
+</html>
